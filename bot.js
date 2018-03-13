@@ -1,8 +1,23 @@
+// Don't change these lines of code. This is to allow the bot to remain hosted on glitch.com 24/7.
+const http = require('http');
+const express = require('express');
+const app = express();
+app.get("/", (request, response) => {
+  console.log(Date.now() + " Ping Received");
+  response.sendStatus(200);
+});
+app.listen(process.env.PORT);
+setInterval(() => {
+  http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
+}, 280000);
+
+
+// Main variables at the top of the program.
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const config = require("./config.json");
+const prefix = "=";
+const token = process.env.TOKEN
 
-let talkedRecently = new Set();
 
 client.on("ready", () => {
 client.user.setActivity("Do =help, or =contact!", {type: "streaming", url: "https://www.twitch.tv"});
@@ -31,18 +46,14 @@ client.on("message", async message => {
   if(message.author.bot) return;
   if(message.channel.type === `dm`) return;
   if(message.channel.type === `group`) return;
-  if(message.content.indexOf(config.prefix) !== 0) return;
-  if (talkedRecently.has(message.author.id)) {
-    return;
-  }
-  talkedRecently.add(message.author.id);
-  setTimeout(() => {
-    talkedRecently.delete(message.author.id);
-  }, 2000);
+  if(message.content.indexOf(prefix) !== 0) return;
 
-  const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+  const args = message.content.slice(prefix.length).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
-
+  const ownerID = "310853886191599616";
+  const adminID = "310661460869120001"
+  
+  
 function format(seconds){
   function pad(s){
     return (s < 10 ? '0' : '') + s;
@@ -60,7 +71,7 @@ var n = "\n";
 
 //NOTE Devban and Devkick
 if(command === "devkick") {
-  if(message.author.id === config.ownerID) {
+  if(message.author.id === ownerID) {
   let member = message.mentions.members.first();
   if(!member)
     return message.reply("Please mention a valid member of this server!");
@@ -89,7 +100,7 @@ if(command === "devkick") {
 }
 
 if(command === "devban") {
-  if(message.author.id === config.ownerID) {
+  if(message.author.id === ownerID) {
   let member = message.mentions.members.first();
   if(!member)
     return message.reply("Please mention a valid member of this server!");
@@ -116,6 +127,7 @@ if(command === "devban") {
   //doesn't have perm
   }
 }
+
 //NOTE Defly.io server commands------------|
 if(command === "announce") {
  if (message.guild.id === '268057885487923202') {
@@ -340,6 +352,15 @@ if(command === "setnick") {
  }
 }
 
+if(command === "resetnick") {
+ if (message.member.hasPermission('ADMINISTRATOR')) {
+ message.guild.members.map(m=>{m.setNickname('');})
+ message.channel.send('Done.')
+ }else {
+  message.reply(`You don't have permission to do this!`)
+ }
+}
+
 //NOTE Info commands ----------------------|
 if(command === "user") {
  const member = message.mentions.members.first() || message.member;
@@ -471,7 +492,7 @@ if(command === "8ball") {
 
 //NOTE Owner commands ---------------------|
 if(command === "shutdown") {
-  if(message.author.id === config.ownerID) {
+  if(message.author.id === ownerID) {
   message.channel.send("Shutting down...").then(message => process.exit(1));
  } else {
  message.channel.send("You are not allowed to use this command!")
@@ -479,7 +500,7 @@ if(command === "shutdown") {
 }
 
 if(command === "eval") {
-     if(message.author.id !== config.ownerID) return;
+     if(message.author.id !== ownerID) return;
        try {
            var eturn = eval(message.content.slice(5).trim());
        }
@@ -503,14 +524,14 @@ if(command === "eval") {
  }
 
 if(command === "say") {
-  if(message.author.id !== config.ownerID) return;
+  if(message.author.id !== ownerID) return;
     const sayMessage = args.join(" ");
       message.delete().catch(O_o=>{});
         message.channel.send(sayMessage);
 }
 
 if(command === "servers") {
-  if(message.author.id !== config.ownerID) return;
+  if(message.author.id !== ownerID) return;
     const servers = []
         client.guilds.forEach(g => {
           servers.push(`${g.id} | ${g.memberCount} | ${g.name}`)
@@ -519,7 +540,7 @@ if(command === "servers") {
 }
 
 if(command === "guilds") {
-  if(message.author.id !== config.ownerID) return;
+  if(message.author.id !== ownerID) return;
   message.channel.send({embed: {
       color: 654321,
       fields: [{
@@ -543,8 +564,8 @@ if(command === "guilds") {
 }
 
 if(command === "leave") {
-  if(message.author.id !== config.ownerID) return;
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+  if(message.author.id !== ownerID) return;
+    const args = message.content.slice(prefix.length).trim().split(/ +/g);
       const command = args.shift().toLowerCase();
         let id = args[0];
           client.guilds.get(id).leave()
@@ -552,13 +573,13 @@ if(command === "leave") {
 };
 
 if(command === "status"){
-  if(message.author.id !== config.ownerID) return;
+  if(message.author.id !== ownerID) return;
   client.user.setActivity("Do =help, or =contact!", {type: "streaming", url: "https://www.twitch.tv"});
   message.channel.send("Refreshed status!")
 }
 
 if(command === "talk") {
-  if(message.author.id === config.ownerID) {
+  if(message.author.id === ownerID) {
   let channel = args[0];
   let answer = message.content.slice(24).trim();
   client.channels.get(`${channel}`).send(`${answer}`);
@@ -583,7 +604,7 @@ if(command === "help") {
     "fields": [
       {
         "name": "**Moderation**",
-        "value": "**kick** - kicks a member from the server" + n + "**ban** - bans a member from the server" + n + "**addrole** - add's a role to a user" + n + "**removerole** - removes a role from a user" + n + "**setnick** change the nickname of a user" + n + " -> =setnick @mention <nickname> to change it to the name you want" + n + " -> =setnick @mention to change it to his/her defaul discord name."
+        "value": "**kick** - kicks a member from the server" + n + "**ban** - bans a member from the server" + n + "**addrole** - add's a role to a user" + n + "**removerole** - removes a role from a user" + n + "**setnick** change the nickname of a user, leave empty to reset it" + n + "**resetnick** resets all nicknames of everyone in the server"
       },
       {
         "name": "**Fun**",
@@ -628,7 +649,7 @@ if(command === "contact") {
 }
 
 if(command === "c-react") {
-  if(message.author.id === config.ownerID) {
+  if(message.author.id === ownerID) {
   let channel = args[0];
   let answer = args.slice(1).join(' ');
   client.channels.get(`${channel}`).send(`${answer} / Answered by ${message.author.tag}`);
@@ -637,7 +658,7 @@ if(command === "c-react") {
 }
 
 if(command === "co-react") {
-  if(message.author.id === config.adminID) {
+  if(message.author.id === adminID) {
   let channel = args[0];
   let answer = args.slice(1).join(' ');
   client.channels.get(`${channel}`).send(`${answer} / Answered by ${message.author.tag}`);
@@ -646,7 +667,7 @@ if(command === "co-react") {
 }
 
 if(command === "restart") {
-  if(message.author.id === config.ownerID) {
+  if(message.author.id === ownerID) {
   message.channel.send("Restarting...").then(message => process.exit(1));
  } else {
  message.channel.send("You are not allowed to use this command!")
@@ -686,4 +707,4 @@ if(command === "invite") {
 
 
 });
- client.login(config.token);
+ client.login(token);
