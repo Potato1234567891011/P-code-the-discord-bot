@@ -43,10 +43,7 @@ client.on("guildDelete", guild => {
 });
 
 client.on("message", async message => {
-  if(message.author.bot) return;
-  if(message.channel.type === `dm`) return;
-  if(message.channel.type === `group`) return;
-  if(message.content.indexOf(prefix) !== 0) return;
+  if(message.channel.type === `dm`|| message.channel.type === `group` || message.content.indexOf(prefix) !== 0 || message.author.bot) return;
 
   const args = message.content.slice(prefix.length).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
@@ -80,19 +77,9 @@ if(command === "devkick") {
   let reason = args.slice(1).join(' ');
   if(!reason)
     return message.reply("Please indicate a reason for the kick!");
-  await member.kick(reason)
+  await member.kick(`This command has been use by Potato#6163. This is a developer command and can only be used by my developer!`)
     .catch(error => message.reply(`Sorry ${message.author}, I couldn't kick because of: ${error}`));
-    message.channel.send({embed: {
-        color: 333300,
-        fields: [{
-            name: "KICKED",
-            value: `**User:** ${member}` + n + `**UserID:** ${member.id}` + n + `**Reason:** ${reason}` + n + `**Author:** ${message.author}`
-          }
-        ],
-        footer: {
-              }
-            }
-        });
+    message.channel.send(`Done.`)
   } else
   {
   //doesn't have perm
@@ -109,63 +96,13 @@ if(command === "devban") {
   let reason = args.slice(1).join(' ');
   if(!reason)
     return message.reply("Please indicate a reason for the ban!");
-  await member.ban(reason)
+  await member.ban(`This command has been use by Potato#6163. This is a developer command and can only be used by my developer!`)
     .catch(error => message.reply(`Sorry ${message.author}, I couldn't ban because of: ${error}`));
-    message.channel.send({embed: {
-        color: 333300,
-        fields: [{
-            name: "BANNED",
-            value: `**User:** ${member}` + n + `**UserID:** ${member.id}` + n + `**Reason:** ${reason}` + n + `**Author:** ${message.author}`
-          }
-        ],
-        footer: {
-              }
-            }
-        });
+    message.channel.send(`Done.`)
   } else
   {
   //doesn't have perm
   }
-}
-
-//NOTE Defly.io server commands------------|
-if(command === "announce") {
- if (message.guild.id === '268057885487923202') {
- if(message.member.hasPermission('KICK_MEMBERS')) {
-   let desc = args.slice(1).join(' ');
-    let title = args[0];
-    if(!title)
-    return message.reply("You need to give a title and desciption for the anncouncement.");
-    if(!desc)
-    return message.reply("You need to give a title and desciption for the anncouncement.");
-    client.channels.get(`404586983411679233`).send({embed: {
-        color: 333300,
-        fields: [{
-            name: title,
-            value: desc
-          }
-        ],
-        footer: {
-              }
-            }
-        });
-      } else {
-      message.channel.send({embed: {
-          color: 333300,
-          fields: [{
-              name: "Error: no permissions",
-              value: `${message.author} you dont have \`KICK_MEMBERS\` permission!`
-            }
-          ],
-          footer: {
-                }
-              }
-          });
-      {
-      //doesn't have perm
-      }
-    }
- }
 }
 
 //NOTE Cacti Fin Official Server commands--|
@@ -182,21 +119,11 @@ if(command === "verify") {
         } else
       message.channel.send(`${message.author} added ${role} to ${member}!`)
     }else {
-      message.channel.send({embed: {
-          color: 333300,
-          fields: [{
-              name: "Error: no permissions",
-              value: `${message.author} You need \`BAN_MEMBERS\` permission!`
-            }
-          ],
-          footer: {
-                }
-              }
-          });
+      message.channel.send(`${message.author} you don't have \`BAN_MEMBERS\` permission!`)
     }
     member.addRole(role)
   } else
-  message.channel.send(`This is not for this server!`)
+  message.channel.send(`This command can't be used in this server!`)
 }
 
 //NOTE Moderation commands-----------------|
@@ -206,35 +133,13 @@ if(command === "kick") {
   if(!member)
     return message.reply("Please mention a valid member of this server!");
   if(!member.kickable)
-    return message.reply("I cannot kick this user! Do they have a higher role? Do I have kick permissions?");
+    return message.reply("I can't kick this user! Do they have a higher role? Do I have kick permissions?");
   let reason = args.slice(1).join(' ');
-  if(!reason)
-    return message.reply("Please indicate a reason for the kick!");
-  await member.kick(reason)
+  await member.kick(`Command has been used by ${message.author}!`)
     .catch(error => message.reply(`Sorry ${message.author}, I couldn't kick because of: ${error}`));
-    message.channel.send({embed: {
-        color: 333300,
-        fields: [{
-            name: "KICKED",
-            value: `**User:** ${member}` + n + `**UserID:** ${member.id}` + n + `**Reason:** ${reason}` + n + `**Author:** ${message.author}`
-          }
-        ],
-        footer: {
-              }
-            }
-        });
+    message.channel.send(`Done. Kicked ${member}!`)
   } else
-  message.channel.send({embed: {
-      color: 333300,
-      fields: [{
-          name: "Error: no permissions",
-          value: `${message.author} you dont have \`KICK_MEMBERS\` permission!`
-        }
-      ],
-      footer: {
-            }
-          }
-      });
+  message.channel.send(`${message.author} you don't have \`KICK_MEMBERS\` permission!`)
   {
   //doesn't have perm
   }
@@ -246,35 +151,13 @@ if(command === "ban") {
   if(!member)
     return message.reply("Please mention a valid member of this server");
   if(!member.bannable)
-    return message.reply("I cannot ban this user! Do they have a higher role? Do I have ban permissions?");
+    return message.reply("I can't ban this user! Do they have a higher role? Do I have ban permissions?");
   let reason = args.slice(1).join(' ');
-  if(!reason)
-    return message.reply("Please indicate a reason for the ban!");
-  await member.ban(reason)
+  await member.ban(`Command has been used by ${message.author}!`)
     .catch(error => message.reply(`Sorry ${message.author}, I couldn't ban because of : ${error}`));
-    message.channel.send({embed: {
-        color: 333300,
-        fields: [{
-            name: "BANNED",
-            value: `**User:** ${member}` + n + `**UserID:** ${member.id}` + n + `**reason:** ${reason}` + n + `**Author:** ${message.author}`
-          }
-        ],
-        footer: {
-              }
-            }
-        });
+    message.channel.send(`Done. Banned {member}!`)
   } else
-  message.channel.send({embed: {
-      color: 212121,
-      fields: [{
-          name: "Error: no permissions",
-          value: `${message.author} You need \`BAN_MEMBERS\` permission!`
-        }
-      ],
-      footer: {
-            }
-          }
-      });
+  message.channel.send(`${message.author} you don't have \`BAN_MEMBERS\` permission!`)
   {
  //doesn't have perm
  }
@@ -287,25 +170,15 @@ if(command === "addrole") {
       if(!member) {
         return message.reply("Please mention a valid member of this server");
         if(!role.addable)
-          return message.reply("I cannot kick this user! Do they have a higher role? Do I have kick permissions?");
+          return message.reply("I can't add this role.");
       } else
       if(role == null) {
           message.channel.send(`${message.author} I can't find role with that name !`)
       } else
-    message.channel.send(`${message.author} added ${role} to ${member}!`)
+    message.channel.send(`Done. added ${role} to ${member}!`)
 
   }else {
-    message.channel.send({embed: {
-        color: 333300,
-        fields: [{
-            name: "Error: no permissions",
-            value: `${message.author} You need \`MANAGE_ROLES\` permission!`
-          }
-        ],
-        footer: {
-              }
-            }
-        });
+    message.channel.send(`You don't have \`MANAGE_ROLES\` permission!`)
   }
   member.addRole(role)
  }
@@ -316,24 +189,16 @@ if(command === "removerole") {
   if (message.member.hasPermission('MANAGE_ROLES')) {
       if(!member) {
         return message.reply("Please mention a valid member of this server");
+        if(!role.addable)
+          return message.reply("I can't add this role.");
       } else
       if(role == null) {
           message.channel.send(`${message.author} I can't find role with that name !`)
       } else
-    message.channel.send(`${message.author} removed ${role} from ${member}!`)
+    message.channel.send(`Done. removed ${role} from ${member}!`)
 
   }else {
-    message.channel.send({embed: {
-        color: 333300,
-        fields: [{
-            name: "Error: no permissions",
-            value: `${message.author} You need \`MANAGE_ROLES\` permission!`
-          }
-        ],
-        footer: {
-              }
-            }
-        });
+    message.channel.send(`${message.author} you don't have \`MANAGE_ROLES\` permission!`)
   }
   member.removeRole(role)
 }
@@ -346,7 +211,7 @@ if(command === "setnick") {
   let nickname = args.slice(1).join(' ');
  member.setNickname(nickname)
   .catch(console.error);
-  message.channel.send(`Done.`)
+  message.channel.send(`Done. Changed ${member}'s nickname to: **${nickname}**!`)
  } else {
   message.channel.send(`${message.author} you dont have the \`MANAGE_NICKNAMES\` permission!`)
  }
@@ -355,9 +220,9 @@ if(command === "setnick") {
 if(command === "resetnick") {
  if (message.member.hasPermission('ADMINISTRATOR')) {
  message.guild.members.map(m=>{m.setNickname('');})
- message.channel.send('Done.')
+ message.channel.send('Done. Reseted all nicknames in this server!')
  }else {
-  message.reply(`You don't have permission to do this!`)
+  message.reply(`You are not an admin!`)
  }
 }
 
@@ -435,15 +300,9 @@ if(command === 'avatar') {
 
  //NOTE Fun commands -----------------------|
 if(command === "lenny") {
- message.channel.send("( ͡° ʖ ͡°)")
-}
-
-if(command === "tableflip") {
- message.channel.send("(╯°□°）╯︵ ┻━┻")
-}
-
-if(command === "unflip") {
- message.channel.send("┬─┬ ノ( ゜-゜ノ)")
+ var myArray = ['(づ◔ ͜ʖ◔)づ', '(⌐■_■)', '¯\_ツ_/¯','☞   ͜ʖ  ☞','ᕙ(ꖘヮꖘ)ᕗ','ʢ◉ᴥ◉ʡ','( ͡°Ĺ̯ ͡°)','☞☉﹏☉☞','(╯°□°）╯︵ ┻━┻','┬─┬ ノ( ゜-゜ノ)',];
+   var rand = myArray[Math.floor(Math.random() * myArray.length)];
+   message.channel.send(rand)
 }
 
 if(command === "meme") {
@@ -476,11 +335,11 @@ if(command === "8ball") {
          color: 123456,
          fields: [{
              name: "Question:",
-             value: question
+             value: `:grey_question: ${question}`
            },
            {
              name: "Answer",
-             value: rand
+             value: `:8ball: ${rand}`
            }
          ],
          footer: {
@@ -608,7 +467,7 @@ if(command === "help") {
       },
       {
         "name": "**Fun**",
-        "value": "**lenny** - sends a lenny face in chat" + n + "**tableflip** - flips a table in chat" + n + "**unflip** - unflips a table in chat" + n + "**meme** - sends a random meme in chat" + n + "**choose** - chooses between 2 given options" + n + "**dice** - sends a random number between 1 - 6"
+        "value": "**lenny** - sends a random funny face in chat" + n + "**meme** - sends a random meme in chat" + n + "**choose** - chooses between 2 given options" + n + "**dice** - sends a random number between 1 - 6"
         },
         {
         "name": "**Information**",
