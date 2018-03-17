@@ -16,7 +16,7 @@ setInterval(() => {
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const prefix = "=";
-const token = process.env.TOKEN
+const token = process.env.TOKEN;
 
 
 client.on("ready", () => {
@@ -43,14 +43,14 @@ client.on("guildDelete", guild => {
 });
 
 client.on("message", async message => {
-  if(message.channel.type === `dm`|| message.channel.type === `group` || message.content.indexOf(prefix) !== 0 || message.author.bot) return;
-
+  if(message.channel.type === `dm` || message.channel.type === `group` || message.content.indexOf(prefix) !== 0 || message.author.bot) return;
+    
   const args = message.content.slice(prefix.length).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
   const ownerID = "310853886191599616";
   const adminID = "310661460869120001"
   
-  
+ //NOTE calculating uptime 
 function format(seconds){
   function pad(s){
     return (s < 10 ? '0' : '') + s;
@@ -62,9 +62,104 @@ function format(seconds){
   return (hours) + ' hours and ' + (minutes) + ' minutes and ' + (seconds) + ' seconds';
 }
 
+   
 //NOTE Variables---------------------------|
 var uptime = process.uptime();
 var n = "\n";
+  
+//NOTE all help stuff
+  if(command === "help"){
+    if(args[0] === undefined){
+  message.channel.send(`${message.author} Do \`=help <command>\` or \`=help all\`!`)}
+    if(args[0] === "all"){
+  message.channel.send(`${message.author} help is send to your DMs!`)
+    message.author.send({embed: {
+    "title": `All help for ${message.author.tag}`,
+    "color": 654321,
+    "footer": {
+    },
+    "thumbnail": {
+      "url": "https://cdn.discordapp.com/attachments/334661068926353408/419860531986300928/P-Code_bot_logo.png"
+    },
+    "image": {},
+    "author": {
+    },
+    "fields": [
+      {
+        "name": "**Moderation**",
+        "value": "**kick** - kicks a member from the server" + n + "**ban** - bans a member from the server" + n + "**addrole** - add's a role to a user" + n + "**removerole** - removes a role from a user" + n + "**setnick** change the nickname of a user, leave empty to reset it" + n + "**resetnick** resets all nicknames of everyone in the server"
+      },
+      {
+        "name": "**Fun**",
+        "value": "**lenny** - sends a random funny face in chat" + n + "**meme** - sends a random meme in chat" + n + "**choose** - chooses between 2 given options" + n + "**dice** - sends a random number between 1 - 6"
+        },
+        {
+        "name": "**Information**",
+        "value": "**user** - gives info about a user" + n + "**ibot** - gives info about the bot" + n + "**guild** - gives info about the server/guild" + n + "**channel** - gives info about the channel" + n + "**avatar** - shows the avatar of a user" + n + " -> =avatar for your avatar"  + n + " -> =avatar @potato#3265 for potato's avatar"
+      },
+      {
+        "name": "**Other**",
+        "value": "**ping** - shows the bot respons time" + n + "**uptime** - shows the bot uptime" + n + "**help** - sends this message" + n + "**invite** - sends a link to invite the bot",
+      },
+      {
+        "name": "**More**",
+        "value": "If you need help with someting, or you have an idea for the bot. Do \`=contact <question>\` and the bot developer will react as soon as possible!",
+      }
+    ]
+  }
+  });
+  }
+    if(args[0] === "kick"){
+const embed = new Discord.RichEmbed()
+  .setTitle("Kick")
+  .setColor(0x00AE86)
+  .setDescription("The kick command kicks users from the server.")
+  .addField("Usage:","=kick <mention <reason>. <reason> is optional, it is not needed.")
+  message.channel.send({embed});}
+    if(args[0] === "ban"){
+const embed = new Discord.RichEmbed()
+  .setTitle("Ban")
+  .setColor(0x00AE86)
+  .setDescription("The ban command bans users from the server.")
+  .addField("Usage:","=ban <mention <reason>. <reason> is optional, it is not needed.")
+  message.channel.send({embed});}
+    if(args[0] === "addrole"){
+const embed = new Discord.RichEmbed()
+  .setTitle("Addrole")
+  .setColor(0x00AE86)
+  .setDescription("The addrole command add's a roles to a user")
+  .addField("Usage:","=addrole <mention <role>")
+  message.channel.send({embed});}
+    if(args[0] === "removerole"){
+const embed = new Discord.RichEmbed()
+  .setTitle("Removerole")
+  .setColor(0x00AE86)
+  .setDescription("The removerole command removes a role from a user")
+  .addField("Usage:","=removerole <mention <role>")
+  message.channel.send({embed});}
+    if(args[0] === "setnick"){
+const embed = new Discord.RichEmbed()
+  .setTitle("Setnick")
+  .setColor(0x00AE86)
+  .setDescription("The setnick command edits the users nickname")
+  .addField("Usage:","=setnick <mention> <new name>, you can leave <new name> empty to reset the nickname")
+  message.channel.send({embed});}
+    if(args[0] === "setnick"){
+const embed = new Discord.RichEmbed()
+  .setTitle("Resetnick")
+  .setColor(0x00AE86)
+  .setDescription("The resetnick command resets all nicknames on a server")
+  .addField("Usage:","=resetnick, NOTE this command can take some time to complete, if the server is big it will take minutes")
+  message.channel.send({embed});}
+    if(args[0] === "unban"){
+const embed = new Discord.RichEmbed()
+  .setTitle("Unban")
+  .setColor(0x00AE86)
+  .setDescription("The unban command unbans a user")
+  .addField("Usage:","=unban <UserID>, this command needs the userID of the user, not a mention")
+  message.channel.send({embed});}
+  
+  }  
 
 //NOTE Devban and Devkick
 if(command === "devkick") {
@@ -75,8 +170,6 @@ if(command === "devkick") {
   if(!member.kickable)
     return message.reply("I cannot kick this user! Do they have a higher role? Do I have kick permissions?");
   let reason = args.slice(1).join(' ');
-  if(!reason)
-    return message.reply("Please indicate a reason for the kick!");
   await member.kick(`This command has been use by Potato#6163. This is a developer command and can only be used by my developer!`)
     .catch(error => message.reply(`Sorry ${message.author}, I couldn't kick because of: ${error}`));
     message.channel.send(`Done.`)
@@ -85,17 +178,14 @@ if(command === "devkick") {
   //doesn't have perm
   }
 }
-
 if(command === "devban") {
   if(message.author.id === ownerID) {
   let member = message.mentions.members.first();
   if(!member)
     return message.reply("Please mention a valid member of this server!");
   if(!member.banable)
-    return message.reply("I cannot ban this user! Do they have a higher role? Do I have kick permissions?");
+    return message.reply("I cannot ban this user! Do they have a higher role? Do I have ban permissions?");
   let reason = args.slice(1).join(' ');
-  if(!reason)
-    return message.reply("Please indicate a reason for the ban!");
   await member.ban(`This command has been use by Potato#6163. This is a developer command and can only be used by my developer!`)
     .catch(error => message.reply(`Sorry ${message.author}, I couldn't ban because of: ${error}`));
     message.channel.send(`Done.`)
@@ -144,7 +234,6 @@ if(command === "kick") {
   //doesn't have perm
   }
 }
-
 if(command === "ban") {
   if (message.member.hasPermission('BAN_MEMBERS')){
   let member = message.mentions.members.first();
@@ -155,14 +244,13 @@ if(command === "ban") {
   let reason = args.slice(1).join(' ');
   await member.ban(`Command has been used by ${message.author}!`)
     .catch(error => message.reply(`Sorry ${message.author}, I couldn't ban because of : ${error}`));
-    message.channel.send(`Done. Banned {member}!`)
+    message.channel.send(`Done. Banned ${member}!`)
   } else
   message.channel.send(`${message.author} you don't have \`BAN_MEMBERS\` permission!`)
   {
  //doesn't have perm
  }
 }
-
 if(command === "addrole") {
   let member = message.mentions.members.first();
   let role = message.guild.roles.find("name", message.content.split(" ").slice(2).join(" "));
@@ -182,7 +270,6 @@ if(command === "addrole") {
   }
   member.addRole(role)
  }
-
 if(command === "removerole") {
   let member = message.mentions.members.first();
   let role = message.guild.roles.find("name", message.content.split(" ").slice(2).join(" "));
@@ -202,7 +289,6 @@ if(command === "removerole") {
   }
   member.removeRole(role)
 }
-
 if(command === "setnick") {
  if (message.member.hasPermission('MANAGE_NICKNAMES')) {
  let member = message.mentions.members.first();
@@ -216,7 +302,6 @@ if(command === "setnick") {
   message.channel.send(`${message.author} you dont have the \`MANAGE_NICKNAMES\` permission!`)
  }
 }
-
 if(command === "resetnick") {
  if (message.member.hasPermission('ADMINISTRATOR')) {
  message.guild.members.map(m=>{m.setNickname('');})
@@ -225,7 +310,18 @@ if(command === "resetnick") {
   message.reply(`You are not an admin!`)
  }
 }
-
+if(command === "unban") {
+ if (message.member.hasPermission('BAN_MEMBERS')){
+ let id = args[0];
+  message.guild.fetchBans().then(bans => {
+   var person = bans.find('id',id).id;
+    message.guild.unban(person);
+     message.channel.send(`Done. unbanned <@${id}>!`)
+ });
+} else 
+ message.channel.send(`${message.author} you don't have \`BAN_MEMBERS\` permission!`)
+}
+  
 //NOTE Info commands ----------------------|
 if(command === "user") {
  const member = message.mentions.members.first() || message.member;
@@ -243,7 +339,6 @@ if(command === "user") {
   .addField(`Highest role:`, `${member.highestRole}`, true)
   message.channel.send({embed});
 }
-
 if(command === "ibot") {
   const embed = new Discord.RichEmbed()
    .setTitle(`Information about P-code`)
@@ -259,7 +354,6 @@ if(command === "ibot") {
    .addField(`Uptime:`, format(uptime), true)
    message.channel.send({embed});
 }
-
 if(command === "guild") {
   const embed = new Discord.RichEmbed()
    .setTitle(`Information about ${message.guild.name}`)
@@ -275,7 +369,6 @@ if(command === "guild") {
    .addField("Verification level:", `${message.guild.verificationLevel}`, true)
    message.channel.send({embed});
 }
-
 if(command === "channel") {
  const embed = new Discord.RichEmbed()
  .setTitle(`Information about ${message.channel.name}`)
@@ -287,7 +380,6 @@ if(command === "channel") {
  .addField(`Channel created at:`, `${message.channel.createdAt}`)
  message.channel.send({embed});
 }
-
 if(command === 'avatar') {
  let user = message.mentions.users.first() || message.author;
  const embed = new Discord.RichEmbed()
@@ -304,26 +396,26 @@ if(command === "lenny") {
    var rand = myArray[Math.floor(Math.random() * myArray.length)];
    message.channel.send(rand)
 }
-
 if(command === "meme") {
  var myArray = ['https://i.ytimg.com/vi/d3vT7MAP5JE/hqdefault.jpg', 'http://i0.kym-cdn.com/photos/images/facebook/001/217/729/f9a.jpg', 'https://absurdintellectual.com/wp-content/uploads/2017/02/maxresdefault1.jpg', `https://www.antagonist.nl/blog/wp-content/uploads/2014/01/meme_bad_luck_wouter.jpg`, `https://www.allaboutphones.nl/wp-content/uploads/2017/08/meme.jpg`, `https://assets.vogue.com/photos/5891c91ece34fb453af7d263/master/pass/06-kendrick-llama-memes.jpg`, `https://lh3.googleusercontent.com/YN836O3aUA0_6SBU76kIyd7RT_qyg9K1ol__lll6AXOh1XIhx3akXeRbtT7qpB4g6Y0=h900`, `http://memesbams.com/wp-content/uploads/2017/09/really-most-offensive-racist-memes.jpg`, `http://s2.quickmeme.com/img/53/5331d4d700b397f643dd3d30bcd6f9276f0354f37fa3e45989bc8b8067a59a83.jpg`,];
    var rand = myArray[Math.floor(Math.random() * myArray.length)];
    message.channel.send(rand)
 }
-
 if(command === "choose") {
  let option1 = args[0];
  let option2 = args[1];
+  if(!option1)
+    return message.reply(`You need to give atleast 2 options to choose from!`);
+    if(!option2)
+    return message.reply(`You need to give atleast 2 options to choose from!`);
    var myArray = [(option1),(option2),];
      var rand = myArray[Math.floor(Math.random() * myArray.length)];
      message.channel.send(rand)
 }
-
 if(command === "dice"){
   var randnumber = Math.floor(Math.random()*6) + 1;
   message.channel.send("You rolled number: " + randnumber);
 }
-
 if(command === "8ball") {
  const question = args.join(" ");
    if(question == null) {
@@ -357,7 +449,6 @@ if(command === "shutdown") {
  message.channel.send("You are not allowed to use this command!")
  }
 }
-
 if(command === "eval") {
      if(message.author.id !== ownerID) return;
        try {
@@ -381,14 +472,12 @@ if(command === "eval") {
            }
        });
  }
-
 if(command === "say") {
   if(message.author.id !== ownerID) return;
     const sayMessage = args.join(" ");
       message.delete().catch(O_o=>{});
         message.channel.send(sayMessage);
 }
-
 if(command === "servers") {
   if(message.author.id !== ownerID) return;
     const servers = []
@@ -397,7 +486,6 @@ if(command === "servers") {
         })
                   message.channel.send('```'+servers.join("\n") +'```')
 }
-
 if(command === "guilds") {
   if(message.author.id !== ownerID) return;
   message.channel.send({embed: {
@@ -421,7 +509,6 @@ if(command === "guilds") {
         });
 
 }
-
 if(command === "leave") {
   if(message.author.id !== ownerID) return;
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
@@ -430,13 +517,11 @@ if(command === "leave") {
           client.guilds.get(id).leave()
             message.channel.send("Left server!")
 };
-
 if(command === "status"){
   if(message.author.id !== ownerID) return;
   client.user.setActivity("Do =help, or =contact!", {type: "streaming", url: "https://www.twitch.tv"});
   message.channel.send("Refreshed status!")
 }
-
 if(command === "talk") {
   if(message.author.id === ownerID) {
   let channel = args[0];
@@ -446,45 +531,6 @@ if(command === "talk") {
  }
 }
 
-//NOTE Help command -----------------------|
-if(command === "help") {
-    message.channel.send(`Help sent to your dm's! ${message.author}`)
-    message.author.send({embed: {
-    "title": `All help for ${message.author.tag}`,
-    "color": 654321,
-    "footer": {
-    },
-    "thumbnail": {
-      "url": "https://cdn.discordapp.com/attachments/334661068926353408/419860531986300928/P-Code_bot_logo.png"
-    },
-    "image": {},
-    "author": {
-    },
-    "fields": [
-      {
-        "name": "**Moderation**",
-        "value": "**kick** - kicks a member from the server" + n + "**ban** - bans a member from the server" + n + "**addrole** - add's a role to a user" + n + "**removerole** - removes a role from a user" + n + "**setnick** change the nickname of a user, leave empty to reset it" + n + "**resetnick** resets all nicknames of everyone in the server"
-      },
-      {
-        "name": "**Fun**",
-        "value": "**lenny** - sends a random funny face in chat" + n + "**meme** - sends a random meme in chat" + n + "**choose** - chooses between 2 given options" + n + "**dice** - sends a random number between 1 - 6"
-        },
-        {
-        "name": "**Information**",
-        "value": "**user** - gives info about a user" + n + "**ibot** - gives info about the bot" + n + "**guild** - gives info about the server/guild" + n + "**channel** - gives info about the channel" + n + "**avater** - shows the avatar of a user" + n + " -> =avatar for your avatar"  + n + " -> =avatar @potato#3265 for potato's avatar"
-      },
-      {
-        "name": "**Other**",
-        "value": "**ping** - shows the bot respons time" + n + "**uptime** - shows the bot uptime" + n + "**help** - sends this message" + n + "**invite** - sends a link to invite the bot",
-      },
-      {
-        "name": "**More**",
-        "value": "If you need help with someting, or you have an idea for the bot. Do \`=contact <question>\` and the bot developer will react as soon as possible!",
-      }
-    ]
-  }
-  });
-}
 
 //NOTE Contact commands -------------------|
 if(command === "contact") {
@@ -506,7 +552,6 @@ if(command === "contact") {
   message.channel.send(`${message.author} you have contacted succesfully!`)
  }
 }
-
 if(command === "c-react") {
   if(message.author.id === ownerID) {
   let channel = args[0];
@@ -515,7 +560,6 @@ if(command === "c-react") {
   message.channel.send(`${message.author} replied!`)
  }
 }
-
 if(command === "co-react") {
   if(message.author.id === adminID) {
   let channel = args[0];
@@ -524,7 +568,6 @@ if(command === "co-react") {
   message.channel.send(`${message.author} replied!`)
  }
 }
-
 if(command === "restart") {
   if(message.author.id === ownerID) {
   message.channel.send("Restarting...").then(message => process.exit(1));
@@ -538,17 +581,15 @@ if(command === "ping") {
   const m = await message.channel.send("Calculating the ping...");
     m.edit(`The ping is: ${m.createdTimestamp - message.createdTimestamp}ms`);
 }
-
 if(command === "uptime") {
   message.channel.send(`I have been online for ${format(uptime)} `)
 }
-
 if(command === "invite") {
   message.channel.send({embed: {
       color: 654321,
       fields: [{
           name: "Support server:",
-          value: "https://discord.gg/VgnzxpC" + n + "https://discordapp.com/invite/VgnzxpC"
+          value: "https://discord.gg/y68DbxK"
         },
         {
           name: "Invite me to your server!",
