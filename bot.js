@@ -11,46 +11,43 @@ setInterval(() => {
   http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
 }, 280000);
 
-
-// Main variables at the top of the program.
+//Main var's
 const Discord = require("discord.js");
-const client = new Discord.Client();
+const bot = new Discord.Client();
 const prefix = "=";
 const token = process.env.TOKEN;
 
-
-client.on("ready", () => {
-client.user.setActivity("Do =help, or =contact!", {type: "streaming", url: "https://www.twitch.tv"});
+bot.on("ready", () => {
+bot.user.setActivity("Do =help, or =contact!", {type: "streaming", url: "https://www.twitch.tv"});
   const servers = []
-  client.guilds.forEach(g => {
+  bot.guilds.forEach(g => {
       servers.push(`${g.id}|${g.memberCount}|${g.name}`)
-
-  })
+      })
   console.log(servers.join("\n"))
-  console.log(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
+  console.log(`Bot has started, with ${bot.users.size} users, in ${bot.channels.size} channels of ${bot.guilds.size} guilds.`);
 });
 
 process.on("unhandledRejection", err => console.error(err.stack || err))
 
-client.on("guildCreate", guild => {
+bot.on("guildCreate", guild => {
   console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
-  client.channels.get(`412973894912180235`).send(`I have been added to: ${guild.name} (id: ${guild.id})`);
+  bot.channels.get(`412973894912180235`).send(`I have been added to: ${guild.name} (id: ${guild.id})`);
 });
 
-client.on("guildDelete", guild => {
+bot.on("guildDelete", guild => {
   console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
-  client.channels.get(`412973894912180235`).send(`I have been removed from: ${guild.name} (id: ${guild.id})`);
+  bot.channels.get(`412973894912180235`).send(`I have been removed from: ${guild.name} (id: ${guild.id})`);
 });
 
-client.on("message", async message => {
-  if(message.channel.type === `dm` || message.channel.type === `group` || message.content.indexOf(prefix) !== 0 || message.author.bot) return;
-    
-  const args = message.content.slice(prefix.length).trim().split(/ +/g);
+bot.on("message", async msg => {
+  if(msg.channel.type === `dm` || msg.channel.type === `group` || msg.content.indexOf(prefix) !== 0 || msg.author.bot) return;
+  
+  const args = msg.content.slice(prefix.length).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
   const ownerID = "310853886191599616";
-  const adminID = "310661460869120001"
+  const pcode = msg.guild.members.get("419806744907350017")
   
- //NOTE calculating uptime 
+  //NOTE calculating uptime 
 function format(seconds){
   function pad(s){
     return (s < 10 ? '0' : '') + s;
@@ -67,265 +64,357 @@ function format(seconds){
 var uptime = process.uptime();
 var n = "\n";
   
-//NOTE all help stuff
-  if(command === "help"){
-    if(args[0] === undefined){
-  message.channel.send(`${message.author} Do \`=help <command>\` or \`=help all\`!`)}
-    if(args[0] === "all"){
-  message.channel.send(`${message.author} help is send to your DMs!`)
-    message.author.send({embed: {
-    "title": `All help for ${message.author.tag}`,
-    "color": 654321,
-    "footer": {
-    },
-    "thumbnail": {
-      "url": "https://cdn.discordapp.com/attachments/334661068926353408/419860531986300928/P-Code_bot_logo.png"
-    },
-    "image": {},
-    "author": {
-    },
-    "fields": [
-      {
-        "name": "**Moderation**",
-        "value": "**kick** - kicks a member from the server" + n + "**ban** - bans a member from the server" + n + "**addrole** - add's a role to a user" + n + "**removerole** - removes a role from a user" + n + "**setnick** change the nickname of a user, leave empty to reset it" + n + "**resetnick** resets all nicknames of everyone in the server"
-      },
-      {
-        "name": "**Fun**",
-        "value": "**lenny** - sends a random funny face in chat" + n + "**meme** - sends a random meme in chat" + n + "**choose** - chooses between 2 given options" + n + "**dice** - sends a random number between 1 - 6"
+  
+  //Developer commands
+if(command === "restart") {
+  if(msg.author.id === ownerID) {
+  msg.channel.send("Restarting...").then(msg => process.exit(1));
+ } else {
+ msg.channel.send("You are not allowed to use this command!")
+ }
+  }
+if(command === "eval") {
+     if(msg.author.id !== ownerID) return;
+       try {
+           var eturn = eval(msg.content.slice(5).trim());
+       }
+       catch (e) {
+           eturn = e;
+       }
+       msg.channel.send({
+           embed: {
+               fields: [
+                   {
+                       name: 'Input',
+                       value: '```'+msg.content.slice(5).trim()+'```'
+                   },
+                   {
+                       name: 'Output',
+                       value: '```'+eturn+'```'
+                   }
+               ]
+           }
+       });
+ }
+if(command === "say") {
+  if(msg.author.id !== ownerID) return;
+    const saymsg = args.join(" ");
+      msg.delete().catch(O_o=>{});
+        msg.channel.send(saymsg);
+}
+if(command === "servers") {
+  if(msg.author.id !== ownerID) return;
+    const servers = []
+        bot.guilds.forEach(g => {
+          servers.push(`${g.id} | ${g.memberCount} | ${g.name}`)
+        })
+                  msg.channel.send('```'+servers.join("\n") +'```')
+}
+if(command === "guilds") {
+  if(msg.author.id !== ownerID) return;
+  msg.channel.send({embed: {
+      color: 654321,
+      fields: [{
+          name: "Guild amount:",
+          value: `${bot.guilds.size} Guilds`
         },
         {
-        "name": "**Information**",
-        "value": "**user** - gives info about a user" + n + "**ibot** - gives info about the bot" + n + "**guild** - gives info about the server/guild" + n + "**channel** - gives info about the channel" + n + "**avatar** - shows the avatar of a user" + n + " -> =avatar for your avatar"  + n + " -> =avatar @potato#3265 for potato's avatar"
-      },
-      {
-        "name": "**Other**",
-        "value": "**ping** - shows the bot respons time" + n + "**uptime** - shows the bot uptime" + n + "**help** - sends this message" + n + "**invite** - sends a link to invite the bot",
-      },
-      {
-        "name": "**More**",
-        "value": "If you need help with someting, or you have an idea for the bot. Do \`=contact <question>\` and the bot developer will react as soon as possible!",
-      }
-    ]
-  }
-  });
-  }
-    if(args[0] === "kick"){
-const embed = new Discord.RichEmbed()
-  .setTitle("Kick")
-  .setColor(0x00AE86)
-  .setDescription("The kick command kicks users from the server.")
-  .addField("Usage:","=kick <mention <reason>. <reason> is optional, it is not needed.")
-  message.channel.send({embed});}
-    if(args[0] === "ban"){
-const embed = new Discord.RichEmbed()
-  .setTitle("Ban")
-  .setColor(0x00AE86)
-  .setDescription("The ban command bans users from the server.")
-  .addField("Usage:","=ban <mention <reason>. <reason> is optional, it is not needed.")
-  message.channel.send({embed});}
-    if(args[0] === "addrole"){
-const embed = new Discord.RichEmbed()
-  .setTitle("Addrole")
-  .setColor(0x00AE86)
-  .setDescription("The addrole command add's a roles to a user")
-  .addField("Usage:","=addrole <mention <role>")
-  message.channel.send({embed});}
-    if(args[0] === "removerole"){
-const embed = new Discord.RichEmbed()
-  .setTitle("Removerole")
-  .setColor(0x00AE86)
-  .setDescription("The removerole command removes a role from a user")
-  .addField("Usage:","=removerole <mention <role>")
-  message.channel.send({embed});}
-    if(args[0] === "setnick"){
-const embed = new Discord.RichEmbed()
-  .setTitle("Setnick")
-  .setColor(0x00AE86)
-  .setDescription("The setnick command edits the users nickname")
-  .addField("Usage:","=setnick <mention> <new name>, you can leave <new name> empty to reset the nickname")
-  message.channel.send({embed});}
-    if(args[0] === "setnick"){
-const embed = new Discord.RichEmbed()
-  .setTitle("Resetnick")
-  .setColor(0x00AE86)
-  .setDescription("The resetnick command resets all nicknames on a server")
-  .addField("Usage:","=resetnick, NOTE this command can take some time to complete, if the server is big it will take minutes")
-  message.channel.send({embed});}
-    if(args[0] === "unban"){
-const embed = new Discord.RichEmbed()
-  .setTitle("Unban")
-  .setColor(0x00AE86)
-  .setDescription("The unban command unbans a user")
-  .addField("Usage:","=unban <UserID>, this command needs the userID of the user, not a mention")
-  message.channel.send({embed});}
-  
-  }  
+          name: "Channel amount:",
+          value: `${bot.channels.size} Channels`
+        },
+        {
+          name: "User amount:",
+          value: `${bot.users.size} Users`
+        }
+      ],
+      footer: {
+            }
+          }
+        });
 
-//NOTE Devban and Devkick
-if(command === "devkick") {
-  if(message.author.id === ownerID) {
-  let member = message.mentions.members.first();
-  if(!member)
-    return message.reply("Please mention a valid member of this server!");
-  if(!member.kickable)
-    return message.reply("I cannot kick this user! Do they have a higher role? Do I have kick permissions?");
-  let reason = args.slice(1).join(' ');
-  await member.kick(`This command has been use by Potato#6163. This is a developer command and can only be used by my developer!`)
-    .catch(error => message.reply(`Sorry ${message.author}, I couldn't kick because of: ${error}`));
-    message.channel.send(`Done.`)
-  } else
-  {
-  //doesn't have perm
-  }
 }
-if(command === "devban") {
-  if(message.author.id === ownerID) {
-  let member = message.mentions.members.first();
-  if(!member)
-    return message.reply("Please mention a valid member of this server!");
-  if(!member.banable)
-    return message.reply("I cannot ban this user! Do they have a higher role? Do I have ban permissions?");
-  let reason = args.slice(1).join(' ');
-  await member.ban(`This command has been use by Potato#6163. This is a developer command and can only be used by my developer!`)
-    .catch(error => message.reply(`Sorry ${message.author}, I couldn't ban because of: ${error}`));
-    message.channel.send(`Done.`)
-  } else
-  {
-  //doesn't have perm
-  }
+if(command === "leave") {
+  if(msg.author.id !== ownerID) return;
+    const args = msg.content.slice(prefix.length).trim().split(/ +/g);
+      const command = args.shift().toLowerCase();
+        let id = args[0];
+          bot.guilds.get(id).leave()
+            msg.channel.send("Left server!")
+};
+if(command === "status"){
+  if(msg.author.id !== ownerID) return;
+  bot.user.setActivity("Do =help, or =contact!", {type: "streaming", url: "https://www.twitch.tv"});
+  msg.channel.send("Refreshed status!")
+}
+if(command === "talk") {
+  if(msg.author.id === ownerID) {
+  let channel = args[0];
+  let answer = msg.content.slice(24).trim();
+  bot.channels.get(`${channel}`).send(`${answer}`);
+  msg.channel.send(`${msg.author} talked in the channel!`)
+ }
 }
 
-//NOTE Cacti Fin Official Server commands--|
+  //Server commands
 if(command === "verify") {
-    let member = message.mentions.members.first();
-    let role = message.guild.roles.find("name", "Verified");
-    if (message.guild.id === '268057885487923202') {
-    if (message.member.hasPermission('BAN_MEMBERS')){
+    let member = msg.mentions.members.first();
+    let role = msg.guild.roles.find("name", "Verified");
+    if(msg.guild.id === '268057885487923202') {
+    if(msg.member.hasPermission('BAN_MEMBERS')){
         if(!member) {
-          return message.reply("Please mention a valid member of this server");
+          return msg.reply("Please mention a valid member of this server");
         } else
         if(role == null) {
-            message.channel.send(`${message.author} there is no role called "Verified"`)
+            msg.channel.send(`${msg.author} there is no role called "Verified"`)
         } else
-      message.channel.send(`${message.author} added ${role} to ${member}!`)
+      msg.channel.send(`${msg.author} added ${role} to ${member}!`)
     }else {
-      message.channel.send(`${message.author} you don't have \`BAN_MEMBERS\` permission!`)
+      msg.channel.send(`${msg.author} you don't have \`BAN_MEMBERS\` permission!`)
     }
     member.addRole(role)
-  } else
-  message.channel.send(`This command can't be used in this server!`)
+  } else {
+  msg.channel.send(`This command can't be used in this server!`)
+}
+} //Server: Cacti Fin's Official Server
+
+  //Help command
+if(command === "help"){
+  if(args[0] === undefined){
+    msg.channel.send("```Help categories:" + n + "all  - sends all help there is" + n + "mod  - sends all moderation help" + n + "info - sends all information help" + n + "fun  - sends all fun help" + n + "Do =help <category>```")}
+    if(args[0] === "all"){
+       msg.reply("help as been sent to your DMs!")
+        const embed = new Discord.RichEmbed()
+  .setTitle(`Moderation`)
+  .setColor(0x00AE86)
+  .setFooter(`P-code`)
+  .setThumbnail(bot.displayAvatarURL)
+  .setTimestamp()
+        .addField("|--- Moderation ---|")
+  .addField(`• kick`,`Kicks a user from the server` + n + `=kick <mention> <reason> (reason is optional)`)
+        .addField(`• ban`,`Bans a user from the server` + n + `=ban <mention> <reason> (reason is optional)`)
+        .addField(`• hackban`,`Bans a user useing their ID` + n + `=hackban <UserID>`)
+        .addField(`• unban`,`Unabns a user useinf their ID` + n + `=unban <ID>`)
+        .addField(`• addrole`,`Add's a role to a user` + n + `=addrole <mention> <role>`)
+        .addField(`• removerole`,`removes a role from a user` + n + `=removerole <mention> <role>`)
+        .addField(`• setnick`,`Changes the nickname of a user` + n + `=setnick <mention <nickname>`)
+        .addField(`• resetnick`,`Changes ALL nicknames on the server to their default discord names` + n + `=resetnick (Admin only!)`)
+         .addField(`• user`,`Sends info about a user` + n + `=info user <mention> (if there is no mention, the info is about you)`)
+          .addField("|--- Information ---|")
+         .addField(`• bot`,`Sends info about me` + n + `=info bot`)
+         .addField(`• guild`,`Sends info about the guild (server)` + n + `=info guild`)
+         .addField(`• channel`,`Sends info about the channel` + n + `=info channel`)
+         .addField(`• role`,`Sends info about a role` + n + `=info role <name> (case sensitive)`)
+          .addField("|--- Fun ---|")
+        .addField(`• lenny`,`Sends a random lenny face` + n + `=lenny`)
+         .addField(`• meme`,`Sends a random meme` + n + `=meme`)
+         .addField(`• choose`,`Chooses between 2 given options` + n + `=choose <option 1> <option 2>`)
+         .addField(`• dice`,`Rolls a dice` + n + `=dice`)
+         .addField(`• 8ball`,`Answers your yes/no question` + n + `=8ball <question>`)
+  msg.author.send({embed});
+    }
+      if(args[0] === "mod"){
+        msg.reply("help as been sent to your DMs!")
+        const embed = new Discord.RichEmbed()
+  .setTitle(`Moderation`)
+  .setColor(0x00AE86)
+  .setFooter(`P-code`)
+  .setThumbnail(bot.displayAvatarURL)
+  .setTimestamp()
+  .addField(`• kick`,`Kicks a user from the server` + n + `=kick <mention> <reason> (reason is optional)`)
+        .addField(`• ban`,`Bans a user from the server` + n + `=ban <mention> <reason> (reason is optional)`)
+        .addField(`• hackban`,`Bans a user useing their ID` + n + `=hackban <UserID>`)
+        .addField(`• unban`,`Unabns a user useinf their ID` + n + `=unban <ID>`)
+        .addField(`• addrole`,`Add's a role to a user` + n + `=addrole <mention> <role>`)
+        .addField(`• removerole`,`removes a role from a user` + n + `=removerole <mention> <role>`)
+        .addField(`• setnick`,`Changes the nickname of a user` + n + `=setnick <mention <nickname>`)
+        .addField(`• resetnick`,`Changes ALL nicknames on the server to their default discord names` + n + `=resetnick (Admin only!)`)
+  msg.author.send({embed});
+      }
+        if(args[0] === "info"){
+           msg.reply("help as been sent to your DMs!")
+        const embed = new Discord.RichEmbed()
+  .setTitle(`Information`)
+  .setColor(0x00AE86)
+  .setFooter(`P-code`)
+  .setThumbnail(bot.displayAvatarURL)
+  .setTimestamp()
+         .addField(`• user`,`Sends info about a user` + n + `=info user <mention> (if there is no mention, the info is about you)`)
+         .addField(`• bot`,`Sends info about me` + n + `=info bot`)
+         .addField(`• guild`,`Sends info about the guild (server)` + n + `=info guild`)
+         .addField(`• channel`,`Sends info about the channel` + n + `=info channel`)
+         .addField(`• role`,`Sends info about a role` + n + `=info role <name> (case sensitive)`)
+  msg.author.send({embed});
+        }
+          if(args[0] === "fun"){
+             msg.reply("help as been sent to your DMs!")
+        const embed = new Discord.RichEmbed()
+  .setTitle(`Fun`)
+  .setColor(0x00AE86)
+  .setFooter(`P-code`)
+  .setThumbnail(bot.displayAvatarURL)
+  .setTimestamp()
+         .addField(`• lenny`,`Sends a random lenny face` + n + `=lenny`)
+         .addField(`• meme`,`Sends a random meme` + n + `=meme`)
+         .addField(`• choose`,`Chooses between 2 given options` + n + `=choose <option 1> <option 2>`)
+         .addField(`• dice`,`Rolls a dice` + n + `=dice`)
+         .addField(`• 8ball`,`Answers your yes/no question` + n + `=8ball <question>`)
+  msg.author.send({embed});
+          }
 }
 
-//NOTE Moderation commands-----------------|
+  //Moderation commands
 if(command === "kick") {
-  if (message.member.hasPermission('KICK_MEMBERS')) {
-  let member = message.mentions.members.first();
+  if(pcode.hasPermission('KICK_MEMBERS')){
+  if(msg.member.hasPermission('KICK_MEMBERS')) {
+  let member = msg.mentions.members.first();
   if(!member)
-    return message.reply("Please mention a valid member of this server!");
+    return msg.reply("Please mention a valid member of this server!");
   if(!member.kickable)
-    return message.reply("I can't kick this user! Do they have a higher role? Do I have kick permissions?");
+    return msg.reply("I can't kick this user! Do they have a higher role?");
   let reason = args.slice(1).join(' ');
-  await member.kick(`Command has been used by ${message.author}!`)
-    .catch(error => message.reply(`Sorry ${message.author}, I couldn't kick because of: ${error}`));
-    message.channel.send(`Done. Kicked ${member}!`)
-  } else
-  message.channel.send(`${message.author} you don't have \`KICK_MEMBERS\` permission!`)
-  {
-  //doesn't have perm
+  await member.kick(`Command has been used by ${msg.author}!`)
+    msg.channel.send(`Done. Kicked ${member}!`)
+  } else {
+  msg.channel.send(`${msg.author} you don't have \`KICK_MEMBERS\` permission!`)
+  }
+  }else {
+    msg.channel.send("I don't have ``KICK_MEMBERS`` permission!")
   }
 }
 if(command === "ban") {
-  if (message.member.hasPermission('BAN_MEMBERS')){
-  let member = message.mentions.members.first();
+  if(pcode.hasPermission('BAN_MEMBERS')){
+  if(msg.member.hasPermission('BAN_MEMBERS')) {
+  let member = msg.mentions.members.first();
   if(!member)
-    return message.reply("Please mention a valid member of this server");
-  if(!member.bannable)
-    return message.reply("I can't ban this user! Do they have a higher role? Do I have ban permissions?");
+    return msg.reply("Please mention a valid member of this server!");
+  if(!member.banable)
+    return msg.reply("I can't ban this user! Do they have a higher role?");
   let reason = args.slice(1).join(' ');
-  await member.ban(`Command has been used by ${message.author}!`)
-    .catch(error => message.reply(`Sorry ${message.author}, I couldn't ban because of : ${error}`));
-    message.channel.send(`Done. Banned ${member}!`)
-  } else
-  message.channel.send(`${message.author} you don't have \`BAN_MEMBERS\` permission!`)
-  {
- //doesn't have perm
- }
+  await member.ban(`Command has been used by ${msg.author}!`)
+    msg.channel.send(`Done. Banned ${member}!`)
+  } else {
+  msg.channel.send(`${msg.author} you don't have \`BAN_MEMBERS\` permission!`)
+  }
+  }else {
+    msg.channel.send("I don't have ``BAN_MEMBERS`` permission!")
+  }
 }
 if(command === "addrole") {
-  let member = message.mentions.members.first();
-  let role = message.guild.roles.find("name", message.content.split(" ").slice(2).join(" "));
-  if (message.member.hasPermission('MANAGE_ROLES')) {
+  let member = msg.mentions.members.first();
+  let role = msg.guild.roles.find("name", msg.content.split(" ").slice(2).join(" "));
+  if (pcode.hasPermission('MANAGE_ROLES')){
+  if (msg.member.hasPermission('MANAGE_ROLES')) {
       if(!member) {
-        return message.reply("Please mention a valid member of this server");
+        return msg.reply("Please mention a valid member of this server!");
         if(!role.addable)
-          return message.reply("I can't add this role.");
+          return msg.reply("I can't add this role!");
       } else
       if(role == null) {
-          message.channel.send(`${message.author} I can't find role with that name !`)
+          msg.channel.send(`${msg.author} I can't find role with that name !`)
       } else
-    message.channel.send(`Done. added ${role} to ${member}!`)
+    msg.channel.send(`Done. added ${role} to ${member}!`)
 
   }else {
-    message.channel.send(`You don't have \`MANAGE_ROLES\` permission!`)
+    msg.channel.send(`You don't have \`MANAGE_ROLES\` permission!`)
   }
   member.addRole(role)
- }
+} else {
+ msg.channel.send("I don't have `MANAGE_ROLES` permission!") 
+}
+}
 if(command === "removerole") {
-  let member = message.mentions.members.first();
-  let role = message.guild.roles.find("name", message.content.split(" ").slice(2).join(" "));
-  if (message.member.hasPermission('MANAGE_ROLES')) {
+  let member = msg.mentions.members.first();
+  let role = msg.guild.roles.find("name", msg.content.split(" ").slice(2).join(" "));
+  if (pcode.hasPermission('MANAGE_ROLES')){
+  if (msg.member.hasPermission('MANAGE_ROLES')) {
       if(!member) {
-        return message.reply("Please mention a valid member of this server");
-        if(!role.addable)
-          return message.reply("I can't add this role.");
+        return msg.reply("Please mention a valid member of this server!");
+        if(!role.removeable)
+          return msg.reply("I can't remove this role!");
       } else
       if(role == null) {
-          message.channel.send(`${message.author} I can't find role with that name !`)
+          msg.channel.send(`${msg.author} I can't find role with that name !`)
       } else
-    message.channel.send(`Done. removed ${role} from ${member}!`)
+    msg.channel.send(`Done. removed ${role} from ${member}!`)
 
   }else {
-    message.channel.send(`${message.author} you don't have \`MANAGE_ROLES\` permission!`)
+    msg.channel.send(`You don't have \`MANAGE_ROLES\` permission!`)
   }
   member.removeRole(role)
+} else {
+ msg.channel.send("I don't have `MANAGE_ROLES` permission!") 
 }
+ }
 if(command === "setnick") {
- if (message.member.hasPermission('MANAGE_NICKNAMES')) {
- let member = message.mentions.members.first();
+  if(pcode.hasPermission('MANAGE_NICKNAMES')){
+ if (msg.member.hasPermission('MANAGE_NICKNAMES')) {
+ let member = msg.mentions.members.first();
  if(!member)
-  return message.reply("Please mention a valid member of this server!");
+  return msg.reply("Please mention a valid member of this server!");
   let nickname = args.slice(1).join(' ');
  member.setNickname(nickname)
   .catch(console.error);
-  message.channel.send(`Done. Changed ${member}'s nickname to: **${nickname}**!`)
+  msg.channel.send(`Done. Changed ${member}'s nickname to: **${nickname}**!`)
  } else {
-  message.channel.send(`${message.author} you dont have the \`MANAGE_NICKNAMES\` permission!`)
+  msg.channel.send(`${msg.author} you dont have the \`MANAGE_NICKNAMES\` permission!`)
  }
+} else {
+  msg.channel.send("I don't have ``MANAGE_NICKNAMES`` permission!")
+}
 }
 if(command === "resetnick") {
- if (message.member.hasPermission('ADMINISTRATOR')) {
- message.guild.members.map(m=>{m.setNickname('');})
- message.channel.send('Done. Reseted all nicknames in this server!')
+  if(pcode.hasPermission('MANAGE_NICKNAMES')){
+ if (msg.member.hasPermission('ADMINISTRATOR')) {
+ msg.guild.members.map(m=>{m.setNickname('');})
+ msg.channel.send('Done. Reseted all nicknames in this server!')
  }else {
-  message.reply(`You are not an admin!`)
+  msg.reply(`You are not an admin!`)
  }
+} else {
+  msg.channel.send("I don't have ``MANAGE_NICKNAMES`` permission!")
 }
+}
+if(command === "hackban"){
+  if(pcode.hasPermission('BAN_MEMBERS')){
+    if (msg.member.hasPermission('BAN_MEMBERS')){
+  let id = args[0]
+  if(!id)
+    return msg.reply("you must provide an id to ban!")
+      let member = `<@${id}>`
+  msg.guild.ban(id)
+      msg.channel.send(`Done. hackbaned ${member} succesfully!`)
+  } else {
+  msg.channel.send(`${msg.author} you don't have \`BAN_MEMBERS\` permission!`)
+  } 
+    } else {
+  msg.channel.send(`${msg.author} I don't have \`BAN_MEMBERS\` permission!`)
+  } 
+  }   
 if(command === "unban") {
- if (message.member.hasPermission('BAN_MEMBERS')){
+  if(pcode.hasPermission('BAN_MEMBERS')){
+ if (msg.member.hasPermission('BAN_MEMBERS')){
  let id = args[0];
-  message.guild.fetchBans().then(bans => {
+  msg.guild.fetchBans().then(bans => {
    var person = bans.find('id',id).id;
-    message.guild.unban(person);
-     message.channel.send(`Done. unbanned <@${id}>!`)
+    msg.guild.unban(person);
+     msg.channel.send(`Done. unbanned <@${id}>!`)
  });
-} else 
- message.channel.send(`${message.author} you don't have \`BAN_MEMBERS\` permission!`)
-}
+} else {
+ msg.channel.send(`${msg.author} you don't have \`BAN_MEMBERS\` permission!`)
+  }
+  } else {
+  msg.channel.send(`${msg.author} I don't have \`BAN_MEMBERS\` permission!`)
+  } 
+  } 
   
-//NOTE Info commands ----------------------|
-if(command === "user") {
- const member = message.mentions.members.first() || message.member;
- const user = message.mentions.users.first() || message.author;
+  //Information commands
+if(command === "info"){
+ if(args[0] === undefined){
+  msg.channel.send("```Info commands:" + n + "user - gives info about the user" + n +  "bot - gives info about me" + n +  "guild - gives info about the guild" + n + "channel - gives info about the channel" + n + "role - sends info about a role```")}
+ if(args[0] === "user") {
+  if(pcode.hasPermission('EMBED_LINKS')){
+ const member = msg.mentions.members.first() || msg.member;
+ const user = msg.mentions.users.first() || msg.author;
  const embed = new Discord.RichEmbed()
   .setTitle(`Information about ${user.tag}`)
   .setColor(0x00AE86)
@@ -337,9 +426,13 @@ if(command === "user") {
   .addField(`Joined server at:`, `${member.joinedAt}`)
   .addField("Status:", `${member.presence.status}`, true)
   .addField(`Highest role:`, `${member.highestRole}`, true)
-  message.channel.send({embed});
+  msg.channel.send({embed});
+} else {
+  return msg.reply("I don't have ``EMBED_LINKS`` permission so i can't send this info.")
 }
-if(command === "ibot") {
+}
+ if(args[0] === "bot") {
+   if(pcode.hasPermission('EMBED_LINKS')){
   const embed = new Discord.RichEmbed()
    .setTitle(`Information about P-code`)
    .setDescription(`A multi function discord bot by discord user Potato#6163`)
@@ -349,81 +442,144 @@ if(command === "ibot") {
    .addField(`When was P-code created?`, `P-code was created at: 21-01-2018.`)
    .addField(`Who is the developer?`, `P-code is created by discord user: Potato#3265.`)
    .addField(`Why was i created?`, `I wanted to make a bot that could help Discord users to improve their server(s)!`)
-   .addField(`Servers:`, `${client.guilds.size}`)
-   .addField(`Ping:`, `${Math.round(client.ping)}ms`, true)
+   .addField(`Servers:`, `${bot.guilds.size}`)
+   .addField(`Ping:`, `${Math.round(bot.ping)}ms`, true)
    .addField(`Uptime:`, format(uptime), true)
-   message.channel.send({embed});
+   msg.channel.send({embed});
+} else {
+  return msg.reply("I don't have ``EMBED_LINKS`` permission so i can't send this info.")
 }
-if(command === "guild") {
+}
+ if(args[0] === "guild") {
+   if(pcode.hasPermission('EMBED_LINKS')){
   const embed = new Discord.RichEmbed()
-   .setTitle(`Information about ${message.guild.name}`)
+   .setTitle(`Information about ${msg.guild.name}`)
    .setColor(0x00AE86)
-   .setDescription(`ID: ${message.guild.id}`)
+   .setDescription(`ID: ${msg.guild.id}`)
    .setFooter(`P-code`)
-   .setThumbnail(message.guild.iconURL)
+   .setThumbnail(msg.guild.iconURL)
    .setTimestamp()
-   .addField(`Guild created at:`, `${message.guild.createdAt}`)
-   .addField(`Server region:`, `${message.guild.region}`, true)
-   .addField(`Owner:`, `${message.guild.owner}`, true)
-   .addField("Member count:", `${message.guild.memberCount}`, true)
-   .addField("Verification level:", `${message.guild.verificationLevel}`, true)
-   message.channel.send({embed});
+   .addField(`Guild created at:`, `${msg.guild.createdAt}`)
+   .addField(`Server region:`, `${msg.guild.region}`, true)
+   .addField(`Owner:`, `${msg.guild.owner}`, true)
+   .addField("Member count:", `${msg.guild.memberCount}`, true)
+   .addField("Verification level:", `${msg.guild.verificationLevel}`, true)
+   msg.channel.send({embed});
+} else {
+  return msg.reply("I don't have ``EMBED_LINKS`` permission so i can't send this info.")
 }
-if(command === "channel") {
+}
+ if(args[0] === "channel") {
+   if(pcode.hasPermission('EMBED_LINKS')){
  const embed = new Discord.RichEmbed()
- .setTitle(`Information about ${message.channel.name}`)
+ .setTitle(`Information about ${msg.channel.name}`)
  .setColor(0x00AE86)
- .setDescription(`ID: ${message.channel.id}`)
+ .setDescription(`ID: ${msg.channel.id}`)
  .setFooter(`P-code`)
- .setThumbnail(message.guild.iconURL)
+ .setThumbnail(msg.guild.iconURL)
  .setTimestamp()
- .addField(`Channel created at:`, `${message.channel.createdAt}`)
- message.channel.send({embed});
+ .addField(`Channel created at:`, `${msg.channel.createdAt}`)
+ msg.channel.send({embed});
+} else {
+  return msg.reply("I don't have ``EMBED_LINKS`` permission so i can't send this info.")
 }
+}
+ if(args[0] === "role"){
+   let wantedRole = args.slice(1).join(" "); // The word role is actually args[0] so we have to slice from 1 and join them all up (e.g. ["role", "Bot", "Developer"]) - in that case we'd want to join bot and developer together with a space.
+    if(!msg.guild.roles.find("name", wantedRole)) return msg.reply("I can't find a role with that name! (Did you type the name right? It is case-sensitive)");
+    let roleObj = msg.guild.roles.find("name", wantedRole);
+    let onsidebar;
+    let isrolementionable;
+    if(roleObj.hoist == "true"){
+       onsidebar = "Yes";
+    }
+    else{
+      onsidebar = "No";
+    }
+
+    if(roleObj.mentionable){
+      isrolementionable = "Yes";
+    }else{
+      isrolementionable = "No";
+    }
+
+    const getRoleMembers = () => {
+      if(roleObj.members.size < 30){
+        let membArr = roleObj.members.array().map(m=>m.id);
+        let mentionArr = membArr.map(memb=>`<@${memb}>`)
+        let finalMentions = mentionArr.join(", ");
+        return finalMentions;
+      }else{
+        return roleObj.members.size;
+      }
+    }
+
+    if(pcode.hasPermission("EMBED_LINKS") || pcode.hasPermission("ADMINISTRATOR")){
+      const embed = new Discord.RichEmbed()
+        .setTitle(`Information about: ${wantedRole}`)
+        .setColor(`${roleObj.hexColor}`)
+        .addField("ID:", `${roleObj.id}`)
+        .addField("Role created at:", `${roleObj.createdAt}`)
+        .addField("Permission Number:", `${roleObj.permissions}`, true )
+        .addField("Position:", `${parseInt(roleObj.position)+1}`, true )
+        .addField("Colour:", `${roleObj.hexColor}`)
+        .addField("Displayed seperately", `${onsidebar}`, true )
+        .addField("Mentionable", `${isrolementionable}`, true)
+        .addField("Members", `${getRoleMembers()}`)
+        .setTimestamp()
+        msg.channel.send({embed});
+    } else {
+      msg.channel.send("I don't have ``EMBED_LINKS`` permission so i can't send this info.")
+    }}}
 if(command === 'avatar') {
- let user = message.mentions.users.first() || message.author;
+   if(pcode.hasPermission('EMBED_LINKS')){
+ let user = msg.mentions.users.first() || msg.author;
  const embed = new Discord.RichEmbed()
       .setTitle(`Avatar of ${user.tag}`)
       .setImage(user.displayAvatarURL)
       .setColor(654321)
       .setFooter(`P-code`)
-      message.channel.send(embed)
+      msg.channel.send(embed)
+} else {
+  return msg.reply("I don't have ``EMBED_LINKS`` permission so i can't send this avatar.")
 }
-
- //NOTE Fun commands -----------------------|
+}
+  
+  //Fun commands
 if(command === "lenny") {
  var myArray = ['(づ◔ ͜ʖ◔)づ', '(⌐■_■)', '¯\_ツ_/¯','☞   ͜ʖ  ☞','ᕙ(ꖘヮꖘ)ᕗ','ʢ◉ᴥ◉ʡ','( ͡°Ĺ̯ ͡°)','☞☉﹏☉☞','(╯°□°）╯︵ ┻━┻','┬─┬ ノ( ゜-゜ノ)',];
    var rand = myArray[Math.floor(Math.random() * myArray.length)];
-   message.channel.send(rand)
+   msg.channel.send(rand)
 }
 if(command === "meme") {
  var myArray = ['https://i.ytimg.com/vi/d3vT7MAP5JE/hqdefault.jpg', 'http://i0.kym-cdn.com/photos/images/facebook/001/217/729/f9a.jpg', 'https://absurdintellectual.com/wp-content/uploads/2017/02/maxresdefault1.jpg', `https://www.antagonist.nl/blog/wp-content/uploads/2014/01/meme_bad_luck_wouter.jpg`, `https://www.allaboutphones.nl/wp-content/uploads/2017/08/meme.jpg`, `https://assets.vogue.com/photos/5891c91ece34fb453af7d263/master/pass/06-kendrick-llama-memes.jpg`, `https://lh3.googleusercontent.com/YN836O3aUA0_6SBU76kIyd7RT_qyg9K1ol__lll6AXOh1XIhx3akXeRbtT7qpB4g6Y0=h900`, `http://memesbams.com/wp-content/uploads/2017/09/really-most-offensive-racist-memes.jpg`, `http://s2.quickmeme.com/img/53/5331d4d700b397f643dd3d30bcd6f9276f0354f37fa3e45989bc8b8067a59a83.jpg`,];
    var rand = myArray[Math.floor(Math.random() * myArray.length)];
-   message.channel.send(rand)
+   msg.channel.send(rand)
 }
 if(command === "choose") {
  let option1 = args[0];
  let option2 = args[1];
   if(!option1)
-    return message.reply(`You need to give atleast 2 options to choose from!`);
+    return msg.reply(`You need to give atleast 2 options to choose from!`);
     if(!option2)
-    return message.reply(`You need to give atleast 2 options to choose from!`);
+    return msg.reply(`You need to give atleast 2 options to choose from!`);
    var myArray = [(option1),(option2),];
      var rand = myArray[Math.floor(Math.random() * myArray.length)];
-     message.channel.send(rand)
+     msg.channel.send(rand)
 }
 if(command === "dice"){
   var randnumber = Math.floor(Math.random()*6) + 1;
-  message.channel.send("You rolled number: " + randnumber);
+  msg.channel.send("You rolled number: " + randnumber);
 }
 if(command === "8ball") {
+   if(pcode.hasPermission('EMBED_LINKS')){
  const question = args.join(" ");
    if(question == null) {
-     message.channel.send("Ask a yes/no question!")
+     msg.channel.send("Ask a yes/no question!")
   } else {
  var myArray = ['Yes!', 'No.', 'Probably.', `I don't think so..`, `Most likely.`, `I don't know.`, `Most likely not.`, `Probably not.`, `Definitely!`,];
    var rand = myArray[Math.floor(Math.random() * myArray.length)];
-     message.channel.send({embed: {
+     msg.channel.send({embed: {
          color: 123456,
          fields: [{
              name: "Question:",
@@ -439,153 +595,53 @@ if(command === "8ball") {
              }
          });
    }
+} else {
+  return msg.reply("I don't have ``EMBED_LINKS`` permission so i can't answer your question.")
 }
-
-//NOTE Owner commands ---------------------|
-if(command === "shutdown") {
-  if(message.author.id === ownerID) {
-  message.channel.send("Shutting down...").then(message => process.exit(1));
- } else {
- message.channel.send("You are not allowed to use this command!")
- }
 }
-if(command === "eval") {
-     if(message.author.id !== ownerID) return;
-       try {
-           var eturn = eval(message.content.slice(5).trim());
-       }
-       catch (e) {
-           eturn = e;
-       }
-       message.channel.send({
-           embed: {
-               fields: [
-                   {
-                       name: 'Input',
-                       value: '```'+message.content.slice(5).trim()+'```'
-                   },
-                   {
-                       name: 'Output',
-                       value: '```'+eturn+'```'
-                   }
-               ]
-           }
-       });
- }
-if(command === "say") {
-  if(message.author.id !== ownerID) return;
-    const sayMessage = args.join(" ");
-      message.delete().catch(O_o=>{});
-        message.channel.send(sayMessage);
-}
-if(command === "servers") {
-  if(message.author.id !== ownerID) return;
-    const servers = []
-        client.guilds.forEach(g => {
-          servers.push(`${g.id} | ${g.memberCount} | ${g.name}`)
-        })
-                  message.channel.send('```'+servers.join("\n") +'```')
-}
-if(command === "guilds") {
-  if(message.author.id !== ownerID) return;
-  message.channel.send({embed: {
-      color: 654321,
-      fields: [{
-          name: "Guild amount:",
-          value: `${client.guilds.size} Guilds`
-        },
-        {
-          name: "Channel amount:",
-          value: `${client.channels.size} Channels`
-        },
-        {
-          name: "User amount:",
-          value: `${client.users.size} Users`
-        }
-      ],
-      footer: {
-            }
-          }
-        });
-
-}
-if(command === "leave") {
-  if(message.author.id !== ownerID) return;
-    const args = message.content.slice(prefix.length).trim().split(/ +/g);
-      const command = args.shift().toLowerCase();
-        let id = args[0];
-          client.guilds.get(id).leave()
-            message.channel.send("Left server!")
-};
-if(command === "status"){
-  if(message.author.id !== ownerID) return;
-  client.user.setActivity("Do =help, or =contact!", {type: "streaming", url: "https://www.twitch.tv"});
-  message.channel.send("Refreshed status!")
-}
-if(command === "talk") {
-  if(message.author.id === ownerID) {
-  let channel = args[0];
-  let answer = message.content.slice(24).trim();
-  client.channels.get(`${channel}`).send(`${answer}`);
-  message.channel.send(`${message.author} talked in the channel!`)
- }
-}
-
-
-//NOTE Contact commands -------------------|
+  
+  //Contact and response
 if(command === "contact") {
   const mcontent = args.join(" ");
   if(!mcontent) {
-  return message.reply(`You need to ask a questions or send idea's. Not an empty message.`)
+  return msg.reply(`You need to ask a questions or send ideas.`)
  }else {
-  client.channels.get(`418430304437534730`).send({embed: {
+  bot.channels.get(`418430304437534730`).send({embed: {
       color: 333300,
       fields: [{
           name: "Contact",
-          value: `**Userid:** ${message.author.id}` + n + `**Channelid:** ${message.channel.id}` + n + `**Guildid:** ${message.guild.id}` + n + `**Text:** ${mcontent}`
+          value: `**Userid:** ${msg.author.id}` + n + `**Channelid:** ${msg.channel.id}` + n + `**Guildid:** ${msg.guild.id}` + n + `**Text:** ${mcontent}`
         }
       ],
       footer: {
             }
           }
       });
-  message.channel.send(`${message.author} you have contacted succesfully!`)
+  msg.channel.send(`${msg.author} you have contacted succesfully!`)
  }
 }
 if(command === "c-react") {
-  if(message.author.id === ownerID) {
+  if(msg.channel.id !== "418430304437534730") return;
   let channel = args[0];
   let answer = args.slice(1).join(' ');
-  client.channels.get(`${channel}`).send(`${answer} / Answered by ${message.author.tag}`);
-  message.channel.send(`${message.author} replied!`)
- }
-}
-if(command === "co-react") {
-  if(message.author.id === adminID) {
-  let channel = args[0];
-  let answer = args.slice(1).join(' ');
-  client.channels.get(`${channel}`).send(`${answer} / Answered by ${message.author.tag}`);
-  message.channel.send(`${message.author} replied!`)
- }
-}
-if(command === "restart") {
-  if(message.author.id === ownerID) {
-  message.channel.send("Restarting...").then(message => process.exit(1));
- } else {
- message.channel.send("You are not allowed to use this command!")
- }
+  if(!channel)
+    return msg.reply("You need to give me a valid channel ID to send to!")
+  if(!answer)
+    return msg.reply("You need to give an answer to the question!")
+  bot.channels.get(`${channel}`).send(`${answer} / Answered by ${msg.author.tag}`);
+  msg.channel.send(`${msg.author} replied!`)
 }
 
-//NOTE Other commands----------------------|
+  //Other commands
 if(command === "ping") {
-  const m = await message.channel.send("Calculating the ping...");
-    m.edit(`The ping is: ${m.createdTimestamp - message.createdTimestamp}ms`);
+  const m = await msg.channel.send("Calculating the ping...");
+    m.edit(`The ping is: ${m.createdTimestamp - msg.createdTimestamp}ms`);
 }
 if(command === "uptime") {
-  message.channel.send(`I have been online for ${format(uptime)} `)
+  msg.channel.send(`I have been online for ${format(uptime)} `)
 }
 if(command === "invite") {
-  message.channel.send({embed: {
+  msg.channel.send({embed: {
       color: 654321,
       fields: [{
           name: "Support server:",
@@ -602,9 +658,6 @@ if(command === "invite") {
         });
 
 }
-
-//NOTE CXCC things-------------------------|
-
-
+  
 });
- client.login(token);
+ bot.login(token);
