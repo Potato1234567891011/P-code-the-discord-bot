@@ -180,8 +180,21 @@ if(command === "verify") {
   //Help command
 if(command === "help"){
   if(args[0] === undefined){
-    msg.channel.send("```Help categories:" + n + "all  - sends all help there is" + n + "mod  - sends all moderation help" + n + "info - sends all information help" + n + "fun  - sends all fun help" + n + "Do =help <category>```")}
-    if(args[0] === "all"){
+     if(pcode.hasPermission('EMBED_LINKS')){
+     const embed = new Discord.RichEmbed()
+  .setTitle(`Help for ${msg.author.tag}`)
+  .setColor(0x00AE86)
+  .setFooter(`P-code`)
+  .setThumbnail(bot.displayAvatarURL)
+  .setTimestamp()
+     .addField("Categories:", "all - sends all help there is" + n + "mod - sends all moderation help" + n + "info - sends all information help" + n + "fun - sends all fun help")
+     .addField("Do =help <category", "Example: =help mod")
+  msg.channel.send({embed});
+    } else {
+  return msg.reply("I don't have ``EMBED_LINKS`` permission so i can't send help.")
+}
+}
+  if(args[0] === "all"){
        msg.reply("help as been sent to your DMs!")
         const embed = new Discord.RichEmbed()
   .setTitle(`Moderation`)
@@ -189,8 +202,8 @@ if(command === "help"){
   .setFooter(`P-code`)
   .setThumbnail(bot.displayAvatarURL)
   .setTimestamp()
-        .addField("|--- Moderation ---|")
-  .addField(`• kick`,`Kicks a user from the server` + n + `=kick <mention> <reason> (reason is optional)`)
+        .addField("|--- Moderation ---|","Commands you can use to moderate the server")
+        .addField(`• kick`,`Kicks a user from the server` + n + `=kick <mention> <reason> (reason is optional)`)
         .addField(`• ban`,`Bans a user from the server` + n + `=ban <mention> <reason> (reason is optional)`)
         .addField(`• hackban`,`Bans a user useing their ID` + n + `=hackban <UserID>`)
         .addField(`• unban`,`Unabns a user useinf their ID` + n + `=unban <ID>`)
@@ -198,21 +211,22 @@ if(command === "help"){
         .addField(`• removerole`,`removes a role from a user` + n + `=removerole <mention> <role>`)
         .addField(`• setnick`,`Changes the nickname of a user` + n + `=setnick <mention <nickname>`)
         .addField(`• resetnick`,`Changes ALL nicknames on the server to their default discord names` + n + `=resetnick (Admin only!)`)
-         .addField(`• user`,`Sends info about a user` + n + `=info user <mention> (if there is no mention, the info is about you)`)
-          .addField("|--- Information ---|")
-         .addField(`• bot`,`Sends info about me` + n + `=info bot`)
-         .addField(`• guild`,`Sends info about the guild (server)` + n + `=info guild`)
-         .addField(`• channel`,`Sends info about the channel` + n + `=info channel`)
-         .addField(`• role`,`Sends info about a role` + n + `=info role <name> (case sensitive)`)
-          .addField("|--- Fun ---|")
+        .addField(`• purge`,`Clears messages in a channel` + n + `=purge <amount>`)
+        .addField("|--- Information ---|","Commands you can use to get information")
+        .addField(`• user`,`Sends info about a user` + n + `=info user <mention> (if there is no mention, the info is about you)`)
+        .addField(`• bot`,`Sends info about me` + n + `=info bot`)
+        .addField(`• guild`,`Sends info about the guild (server)` + n + `=info guild`)
+        .addField(`• channel`,`Sends info about the channel` + n + `=info channel`)
+        .addField(`• role`,`Sends info about a role` + n + `=info role <name> (case sensitive)`)
+        .addField("|--- Fun ---|","Funny commands")
         .addField(`• lenny`,`Sends a random lenny face` + n + `=lenny`)
-         .addField(`• meme`,`Sends a random meme` + n + `=meme`)
-         .addField(`• choose`,`Chooses between 2 given options` + n + `=choose <option 1> <option 2>`)
-         .addField(`• dice`,`Rolls a dice` + n + `=dice`)
-         .addField(`• 8ball`,`Answers your yes/no question` + n + `=8ball <question>`)
+        .addField(`• meme`,`Sends a random meme` + n + `=meme`)
+        .addField(`• choose`,`Chooses between 2 given options` + n + `=choose <option 1> <option 2>`)
+        .addField(`• dice`,`Rolls a dice` + n + `=dice`)
+        .addField(`• 8ball`,`Answers your yes/no question` + n + `=8ball <question>`)
   msg.author.send({embed});
     }
-      if(args[0] === "mod"){
+  if(args[0] === "mod"){
         msg.reply("help as been sent to your DMs!")
         const embed = new Discord.RichEmbed()
   .setTitle(`Moderation`)
@@ -228,9 +242,10 @@ if(command === "help"){
         .addField(`• removerole`,`removes a role from a user` + n + `=removerole <mention> <role>`)
         .addField(`• setnick`,`Changes the nickname of a user` + n + `=setnick <mention <nickname>`)
         .addField(`• resetnick`,`Changes ALL nicknames on the server to their default discord names` + n + `=resetnick (Admin only!)`)
+        .addField(`• purge`,`Clears messages in a channel` + n + `=purge <amount>`)
   msg.author.send({embed});
       }
-        if(args[0] === "info"){
+  if(args[0] === "info"){
            msg.reply("help as been sent to your DMs!")
         const embed = new Discord.RichEmbed()
   .setTitle(`Information`)
@@ -245,7 +260,7 @@ if(command === "help"){
          .addField(`• role`,`Sends info about a role` + n + `=info role <name> (case sensitive)`)
   msg.author.send({embed});
         }
-          if(args[0] === "fun"){
+  if(args[0] === "fun"){
              msg.reply("help as been sent to your DMs!")
         const embed = new Discord.RichEmbed()
   .setTitle(`Fun`)
@@ -312,7 +327,7 @@ if(command === "addrole") {
       if(role == null) {
           msg.channel.send(`${msg.author} I can't find role with that name !`)
       } else
-    msg.channel.send(`Done. added ${role} to ${member}!`)
+    msg.channel.send(`Done. added **${role.name}** to ${member}!`)
 
   }else {
     msg.channel.send(`You don't have \`MANAGE_ROLES\` permission!`)
@@ -335,7 +350,7 @@ if(command === "removerole") {
       if(role == null) {
           msg.channel.send(`${msg.author} I can't find role with that name !`)
       } else
-    msg.channel.send(`Done. removed ${role} from ${member}!`)
+    msg.channel.send(`Done. removed **${role.name}**  from ${member}!`)
 
   }else {
     msg.channel.send(`You don't have \`MANAGE_ROLES\` permission!`)
@@ -347,14 +362,16 @@ if(command === "removerole") {
  }
 if(command === "setnick") {
   if(pcode.hasPermission('MANAGE_NICKNAMES')){
- if (msg.member.hasPermission('MANAGE_NICKNAMES')) {
+ if(msg.member.hasPermission('MANAGE_NICKNAMES')) {
  let member = msg.mentions.members.first();
  if(!member)
   return msg.reply("Please mention a valid member of this server!");
   let nickname = args.slice(1).join(' ');
+   if(!member.changeable)
+     return msg.channel.send("I can't change this nickname.")
  member.setNickname(nickname)
   .catch(console.error);
-  msg.channel.send(`Done. Changed ${member}'s nickname to: **${nickname}**!`)
+  msg.channel.send(`Done. Changed nickname!`)
  } else {
   msg.channel.send(`${msg.author} you dont have the \`MANAGE_NICKNAMES\` permission!`)
  }
@@ -406,7 +423,29 @@ if(command === "unban") {
   msg.channel.send(`${msg.author} I don't have \`BAN_MEMBERS\` permission!`)
   } 
   } 
-  
+if(command === "purge"){
+if(pcode.hasPermission("MANAGE_MESSAGES") || pcode.hasPermission("ADMINISTRATOR")){
+      if(msg.member.hasPermission("MANAGE_MESSAGES")){
+        let amount = args[0]; // The first argument is the expected amount of messages to delete.
+        if(!amount) return msg.reply("please provide a valid number of messages to delete!");
+        //if(amount.length > 2) return msg.reply("you may only enter two characters as the amount of messages to delete, a number between 1 and 99!");
+        if(isNaN(amount)) return msg.reply("the entered value is not a number!"); // Is the amount specified, not a number? Test with isNaN()!
+        let amountInteger = parseInt(amount); // Parse it as an integer so we can add one to it.
+        if(amountInteger < 1 || amountInteger > 99) return msg.reply("please provide a number between 1 and 99!");
+        msg.channel.fetchMessages({ limit: amountInteger+1 }).then(m=>msg.channel.bulkDelete(m)); // Fetch the number of messages specified, then delete that amount of messages from the channel.
+        const rep = msg.reply(`cleared **${amount} messages** successfully!`) // Tell the user that they successfully deleted the wanted messages.
+        .then((themsg) => {
+          const del = () => themsg.delete(); // function to delete the message
+          setTimeout(del, 5000); // delete in 3 seconds
+        });
+      }else{
+        return msg.reply("you don't have ``MANAGE_MESSAGES`` permission!");
+      }
+    }else{
+      return msg.reply("I don't have ``MANAGE_MESSAGES`` permission!");
+    }  
+}
+
   //Information commands
 if(command === "info"){
  if(args[0] === undefined){
@@ -451,7 +490,10 @@ if(command === "info"){
 }
 }
  if(args[0] === "guild") {
+   if(msg.guild.id === "396799859900022784")
+     return msg.channel.send("Yzfire has disabled this command.")
    if(pcode.hasPermission('EMBED_LINKS')){
+  let roleArr = msg.guild.roles.array().map(r=> r.name);
   const embed = new Discord.RichEmbed()
    .setTitle(`Information about ${msg.guild.name}`)
    .setColor(0x00AE86)
@@ -464,6 +506,7 @@ if(command === "info"){
    .addField(`Owner:`, `${msg.guild.owner}`, true)
    .addField("Member count:", `${msg.guild.memberCount}`, true)
    .addField("Verification level:", `${msg.guild.verificationLevel}`, true)
+   .addField(`Roles:`,`${roleArr}`)
    msg.channel.send({embed});
 } else {
   return msg.reply("I don't have ``EMBED_LINKS`` permission so i can't send this info.")
@@ -504,7 +547,7 @@ if(command === "info"){
     }
 
     const getRoleMembers = () => {
-      if(roleObj.members.size < 30){
+      if(roleObj.members.size < 50){
         let membArr = roleObj.members.array().map(m=>m.id);
         let mentionArr = membArr.map(memb=>`<@${memb}>`)
         let finalMentions = mentionArr.join(", ");
@@ -523,9 +566,9 @@ if(command === "info"){
         .addField("Permission Number:", `${roleObj.permissions}`, true )
         .addField("Position:", `${parseInt(roleObj.position)+1}`, true )
         .addField("Colour:", `${roleObj.hexColor}`)
-        .addField("Displayed seperately", `${onsidebar}`, true )
-        .addField("Mentionable", `${isrolementionable}`, true)
-        .addField("Members", `${getRoleMembers()}`)
+        .addField("Displayed seperately:", `${onsidebar}`, true )
+        .addField("Mentionable:", `${isrolementionable}`, true)
+        .addField("Members:", `${getRoleMembers()}`)
         .setTimestamp()
         msg.channel.send({embed});
     } else {
@@ -545,7 +588,7 @@ if(command === 'avatar') {
 }
 }
   
-  //Fun commands
+  //Fun commands  
 if(command === "lenny") {
  var myArray = ['(づ◔ ͜ʖ◔)づ', '(⌐■_■)', '¯\_ツ_/¯','☞   ͜ʖ  ☞','ᕙ(ꖘヮꖘ)ᕗ','ʢ◉ᴥ◉ʡ','( ͡°Ĺ̯ ͡°)','☞☉﹏☉☞','(╯°□°）╯︵ ┻━┻','┬─┬ ノ( ゜-゜ノ)',];
    var rand = myArray[Math.floor(Math.random() * myArray.length)];
@@ -598,6 +641,12 @@ if(command === "8ball") {
 } else {
   return msg.reply("I don't have ``EMBED_LINKS`` permission so i can't answer your question.")
 }
+}
+if(command === "rate") {
+  let member = msg.mentions.users.first() || msg.author;
+ var myArray = ['1','2','4','5','6','7','8','9','10'];
+   var rand = myArray[Math.floor(Math.random() * myArray.length)];
+  msg.channel.send(`I rate ${member} at ${rand} out of 10!`)
 }
   
   //Contact and response
