@@ -18,7 +18,10 @@ const Discord = require("discord.js");
 const prefix = "=";
 const token = process.env.TOKEN;
 const bot = new Discord.Client();
-
+const Enmap = require("enmap");
+const EnmapLevel = require("enmap-level");
+const blacklistSource = new EnmapLevel({name: "blacklistedPeople"});
+bot.blacklist = new Enmap({provider: blacklistSource});
 
 bot.on("ready", () => {
 bot.user.setActivity("Do =help, or =contact!", {type: "streaming", url: "https://www.twitch.tv"});
@@ -65,15 +68,15 @@ function format(seconds){
 bot.on('guildMemberRemove', member => {
     let guild = member.guild;
     console.log("Test");
-    guild.channels.get('321595311992602626').send(`Test`);
+    guild.channels.get('260538516285423616').send(`${member} left server`);
     })
 
-  
   
 //NOTE Variables---------------------------|
 var uptime = process.uptime();
 var n = "\n";
   
+if(bot.blacklist.get(msg.author.id)) return;
   
   //Developer cmds
 if(cmd === "restart") {
@@ -129,7 +132,7 @@ if(cmd === "servers") {
         bot.guilds.forEach(g => {
           servers.push(`${g.id} | ${g.memberCount} | ${g.name}`)
         })
-                  msg.channel.send('```'+servers.join("\n") + n + "-------------------------------------------------------------------------" + n + `A total of ${bot.guilds.size} guilds, ${bot.channels.size} channels and ${getMemberCount()} members` +'```')
+                  msg.channel.send('```'+servers.join("\n") + n + "--------------------------------------------------------------------" + n + `A total of ${bot.guilds.size} guilds, ${bot.channels.size} channels and ${getMemberCount()} members` +'```')
  } else {
  msg.channel.send("You are not allowed to use this cmd!")
  }  
@@ -156,7 +159,49 @@ if(cmd === "status"){
  msg.channel.send("You are not allowed to use this cmd!")
  }
 }
-  
+if(cmd === "blacklist"){
+  if(msg.author.id !== ownerID) return msg.reply("you are not authorized to edit P-codes's blacklist."); // Is the person trying to execute the command the developer?
+  let possibleOptions = ["add", "remove"];
+  let option = args[0];
+  if(!possibleOptions.includes(option)) return msg.reply(`please provide a valid option. Valid options are:\n${possibleOptions.join(", ")}`);
+  if(option === "add"){
+    let mention = msg.mentions.members.first();
+    let personToBlackList;
+    if(mention){
+      personToBlackList = mention.id;
+    }else{
+      personToBlackList = args[1];
+    }
+    //let personToBlackList = msg.mentions.members.first().id || args[0]; // It's the first mention, or the value or args[0].
+    let reason = args.slice(2).join(" "); // Optional reason.
+    if(!personToBlackList) return msg.reply("please provide a member to blacklist."); // Was an ID or member provided?
+    if(isNaN(personToBlackList) || personToBlackList.length !== 18) return msg.reply("please provide a valid user ID or mention."); // Is the person to blacklist actually an ID? Does it have a length of 18 and is it a number?
+    if(personToBlackList === "310853886191599616") return msg.reply("why are you trying to blacklist yourself?");
+    if(personToBlackList === "419806744907350017") return msg.reply(`you cannot add P-code to the it's own blacklist.`);
+    if(!reason) reason = "None specified.";
+    let someObject = {
+      reason: reason
+    }
+
+    bot.blacklist.set(personToBlackList, someObject);
+    msg.reply(`blacklisted the ID ${personToBlackList} from using P-code successfully!`);
+    }else if(option === "remove"){
+    let mention = msg.mentions.members.first();
+    let personToRemove;
+    if(mention){
+      personToRemove = mention.id;
+    }else{
+      personToRemove = args[1];
+    }
+    //let personToBlackList = msg.mentions.members.first().id || args[0]; // It's the first mention, or the value or args[0].
+    let reason = args.slice(2).join(" "); // Optional reason.
+    if(!personToRemove) return msg.reply("please provide a member to remove from the blacklist."); // Was an ID or member provided?
+    if(isNaN(personToRemove) || personToRemove.length !== 18) return msg.reply("please provide a valid user ID or mention."); // Is the person to blacklist actually an ID? Does it have a length of 18 and is it a number?
+    if(!bot.blacklist.get(personToRemove)) return msg.reply(`the user with the ID of ${personToRemove} is not in the blacklist.`);
+    bot.blacklist.delete(personToRemove);
+    msg.reply(`the user with the ID of ${personToRemove} was removed from the blacklist.`);
+    }
+}
   //Server cmds
 if(cmd === "verify") {
     let member = msg.mentions.members.first();
@@ -445,7 +490,7 @@ if(pcode.hasPermission("MANAGE_MESSAGES") || pcode.hasPermission("ADMINISTRATOR"
     }else{
       return msg.reply("I don't have ``MANAGE_MESSAGES`` permission!");
     }  
-} // 10 commands 
+}
 
   //Information cmds
 if(cmd === "info"){
@@ -613,7 +658,7 @@ if(cmd === "choose") {
    var myArray = [(option1),(option2),];
      var rand = myArray[Math.floor(Math.random() * myArray.length)];
      msg.channel.send(rand)
-} // 20 commands 
+}
 if(cmd === "dice"){
   var randnumber = Math.floor(Math.random()*6) + 1;
   msg.channel.send("You rolled number: " + randnumber);
