@@ -3,7 +3,6 @@ const http = require('http');
 const express = require('express');
 const app = express();
 
-
 app.get("/", (request, response) => {
   console.log(Date.now() + " Ping Received");
   response.sendStatus(200);
@@ -20,8 +19,6 @@ const token = process.env.TOKEN;
 const bot = new Discord.Client();
 const Enmap = require("enmap");
 const EnmapLevel = require("enmap-level");
-const blacklistSource = new EnmapLevel({name: "blacklistedPeople"});
-bot.blacklist = new Enmap({provider: blacklistSource});
 
 bot.on("ready", () => {
 bot.user.setActivity("Do =help, or =contact!", {type: "streaming", url: "https://www.twitch.tv"});
@@ -65,25 +62,17 @@ function format(seconds){
   return (hours) + ' hours and ' + (minutes) + ' minutes and ' + (seconds) + ' seconds';
 }
 
-bot.on('guildMemberRemove', member => {
-    let guild = member.guild;
-    console.log("Test");
-    guild.channels.get('260538516285423616').send(`${member} left server`);
-    })
-
-  
-//NOTE Variables---------------------------|
+ 
+//Variables 
 var uptime = process.uptime();
 var n = "\n";
   
-if(bot.blacklist.get(msg.author.id)) return;
-  
-  //Developer cmds
+  //Developer commands
 if(cmd === "restart") {
   if(msg.author.id === ownerID) {
   msg.channel.send("Restarting...").then(msg => process.exit(1));
  } else {
- msg.channel.send("You are not allowed to use this cmd!")
+ msg.channel.send("You are not allowed to use this command!")
  }
   }
 if(cmd === "eval") {
@@ -109,7 +98,7 @@ if(cmd === "eval") {
            }
        });
   } else {
- msg.channel.send("You are not allowed to use this cmd!")
+ msg.channel.send("You are not allowed to use this command!")
  }
 }
 if(cmd === "say") {
@@ -118,7 +107,7 @@ if(cmd === "say") {
       msg.delete().catch(O_o=>{});
         msg.channel.send(saymsg);
  } else {
- msg.channel.send("You are not allowed to use this cmd!")
+ msg.channel.send("You are not allowed to use this command!")
  }
 }
 if(cmd === "servers") {
@@ -130,11 +119,12 @@ if(cmd === "servers") {
 }
     const servers = []
         bot.guilds.forEach(g => {
-          servers.push(`${g.id} | ${g.memberCount} | ${g.name}`)
+          let memberCount2 = String(g.memberCount).padEnd(4);
+          servers.push(`${g.id} | ${memberCount2} | ${g.name}`)
         })
                   msg.channel.send('```'+servers.join("\n") + n + "--------------------------------------------------------------------" + n + `A total of ${bot.guilds.size} guilds, ${bot.channels.size} channels and ${getMemberCount()} members` +'```')
  } else {
- msg.channel.send("You are not allowed to use this cmd!")
+ msg.channel.send("You are not allowed to use this command!")
  }  
 }
 if(cmd === "leave") {
@@ -145,7 +135,7 @@ if(cmd === "leave") {
           bot.guilds.get(id).leave()
             msg.channel.send("Left server!")
  } else {
- msg.channel.send("You are not allowed to use this cmd!")
+ msg.channel.send("You are not allowed to use this command!")
  }
 };  
 if(cmd === "status"){
@@ -156,53 +146,61 @@ if(cmd === "status"){
   bot.user.setActivity(status, {type: "playing"});
   msg.channel.send("Done, changed status.")
  } else {
- msg.channel.send("You are not allowed to use this cmd!")
+ msg.channel.send("You are not allowed to use this command!")
  }
 }
-if(cmd === "blacklist"){
-  if(msg.author.id !== ownerID) return msg.reply("you are not authorized to edit P-codes's blacklist."); // Is the person trying to execute the command the developer?
-  let possibleOptions = ["add", "remove"];
-  let option = args[0];
-  if(!possibleOptions.includes(option)) return msg.reply(`please provide a valid option. Valid options are:\n${possibleOptions.join(", ")}`);
-  if(option === "add"){
-    let mention = msg.mentions.members.first();
-    let personToBlackList;
-    if(mention){
-      personToBlackList = mention.id;
-    }else{
-      personToBlackList = args[1];
-    }
-    //let personToBlackList = msg.mentions.members.first().id || args[0]; // It's the first mention, or the value or args[0].
-    let reason = args.slice(2).join(" "); // Optional reason.
-    if(!personToBlackList) return msg.reply("please provide a member to blacklist."); // Was an ID or member provided?
-    if(isNaN(personToBlackList) || personToBlackList.length !== 18) return msg.reply("please provide a valid user ID or mention."); // Is the person to blacklist actually an ID? Does it have a length of 18 and is it a number?
-    if(personToBlackList === "310853886191599616") return msg.reply("why are you trying to blacklist yourself?");
-    if(personToBlackList === "419806744907350017") return msg.reply(`you cannot add P-code to the it's own blacklist.`);
-    if(!reason) reason = "None specified.";
-    let someObject = {
-      reason: reason
-    }
-
-    bot.blacklist.set(personToBlackList, someObject);
-    msg.reply(`blacklisted the ID ${personToBlackList} from using P-code successfully!`);
-    }else if(option === "remove"){
-    let mention = msg.mentions.members.first();
-    let personToRemove;
-    if(mention){
-      personToRemove = mention.id;
-    }else{
-      personToRemove = args[1];
-    }
-    //let personToBlackList = msg.mentions.members.first().id || args[0]; // It's the first mention, or the value or args[0].
-    let reason = args.slice(2).join(" "); // Optional reason.
-    if(!personToRemove) return msg.reply("please provide a member to remove from the blacklist."); // Was an ID or member provided?
-    if(isNaN(personToRemove) || personToRemove.length !== 18) return msg.reply("please provide a valid user ID or mention."); // Is the person to blacklist actually an ID? Does it have a length of 18 and is it a number?
-    if(!bot.blacklist.get(personToRemove)) return msg.reply(`the user with the ID of ${personToRemove} is not in the blacklist.`);
-    bot.blacklist.delete(personToRemove);
-    msg.reply(`the user with the ID of ${personToRemove} was removed from the blacklist.`);
-    }
+if(cmd === "sinfo") {
+   if(msg.author.id === ownerID){
+   if(pcode.hasPermission('EMBED_LINKS')){
+     let id = args[0]
+     if(!id)
+       return msg.reply("Give me an id");
+     let guild = bot.guilds.get(id);
+      let roleArr = guild.roles.array().map(r=> r.name);
+  const embed = new Discord.RichEmbed()
+   .setTitle(`Information about ${guild.name}`)
+   .setColor(0x00AE86)
+   .setDescription(`ID: ${guild.id}`)
+   .setFooter(`P-code`)
+   .setThumbnail(guild.iconURL)
+   .setTimestamp()
+   .addField(`Guild created at:`, `${guild.createdAt}`)
+   .addField(`Server region:`, `${guild.region}`, true)
+   .addField(`Owner:`, `${guild.owner}`, true)
+   .addField("Member count:", `${guild.memberCount}`, true)
+   .addField("Verification level:", `${guild.verificationLevel}`, true)
+   .addField(`Roles:`,`${roleArr}`)
+   msg.channel.send({embed});
+} else {
+  return msg.reply("I don't have ``EMBED_LINKS`` permission so i can't send this info.")
 }
-  //Server cmds
+} else {
+ msg.channel.send("You are not allowed to use this command!")
+ }
+}
+if(cmd === "suser") { 
+if(pcode.hasPermission('EMBED_LINKS')){
+  let id = args[0]
+  if(!id)
+    return msg.reply("You must give me an ID")
+ const member = bot.users.get(id)
+ const user = bot.users.get(id)
+ const embed = new Discord.RichEmbed()
+  .setTitle(`Information about ${user.tag}`)
+  .setColor(0x00AE86)
+  .setDescription(`ID: ${member.id}`)
+  .setFooter(`P-code`)
+  .setThumbnail(user.displayAvatarURL)
+  .setTimestamp()
+  .addField(`Joined discord at:`, `${user.createdAt}`)
+  .addField("Status:", `${member.presence.status}`, true)
+  msg.channel.send({embed});
+} else {
+  return msg.reply("I don't have ``EMBED_LINKS`` permission so i can't send this info.")
+}
+}
+  
+  //Server commands
 if(cmd === "verify") {
     let member = msg.mentions.members.first();
     let role = msg.guild.roles.find("name", "Verified");
@@ -223,8 +221,22 @@ if(cmd === "verify") {
   msg.channel.send(`This cmd can't be used in this server!`)
 }
 } //Server: Cacti Fin's Official Server
-
-  //Help cmd
+if(cmd === "failedv") {
+  let member = msg.mentions.members.first();
+    if(msg.guild.id === '268057885487923202') {
+    if(msg.member.hasPermission('KICK_MEMBERS')){
+        if(!member)
+          return msg.reply("Please mention a valid member of this server");
+    }else {
+      msg.channel.send(`${msg.author} you don't have \`BAN_MEMBERS\` permission!`)
+    }
+    member.kick
+  } else {
+  msg.channel.send(`This comm can't be used in this server!`)
+}
+} //Server: Cacti Fin
+  
+  //Help command
 if(cmd === "help"){
   if(args[0] === undefined){
      if(pcode.hasPermission('EMBED_LINKS')){
@@ -234,45 +246,13 @@ if(cmd === "help"){
   .setFooter(`P-code`)
   .setThumbnail(bot.displayAvatarURL)
   .setTimestamp()
-     .addField("Categories:", "all - sends all help there is" + n + "mod - sends all moderation help" + n + "info - sends all information help" + n + "fun - sends all fun help")
+     .addField("Categories:","mod - sends all moderation help" + n + "info - sends all information help" + n + "fun - sends all fun help" + n + "other - sends all other help")
      .addField("Do =help <category", "Example: =help mod")
   msg.channel.send({embed});
     } else {
   return msg.reply("I don't have ``EMBED_LINKS`` permission so i can't send help.")
 }
 }
-  if(args[0] === "all"){
-       msg.reply("help as been sent to your DMs!")
-        const embed = new Discord.RichEmbed()
-  .setTitle(`Moderation`)
-  .setColor(0x00AE86)
-  .setFooter(`P-code`)
-  .setThumbnail(bot.displayAvatarURL)
-  .setTimestamp()
-        .addField("|--- Moderation ---|","cmds you can use to moderate the server")
-        .addField(`• kick`,`Kicks a user from the server` + n + `=kick <mention> <reason> (reason is optional)`)
-        .addField(`• ban`,`Bans a user from the server` + n + `=ban <mention> <reason> (reason is optional)`)
-        .addField(`• hackban`,`Bans a user using their ID` + n + `=hackban <UserID>`)
-        .addField(`• unban`,`Unbans a user using their ID` + n + `=unban <ID>`)
-        .addField(`• addrole`,`Add's a role to a user` + n + `=addrole <mention> <role>`)
-        .addField(`• removerole`,`removes a role from a user` + n + `=removerole <mention> <role>`)
-        .addField(`• setnick`,`Changes the nickname of a user` + n + `=setnick <mention <nickname>`)
-        .addField(`• resetnick`,`Changes ALL nicknames on the server to their default discord names` + n + `=resetnick (Admin only!)`)
-        .addField(`• purge`,`Clears messages in a channel` + n + `=purge <amount>`)
-        .addField("|--- Information ---|","cmds you can use to get information")
-        .addField(`• user`,`Sends info about a user` + n + `=info user <mention> (if there is no mention, the info is about you)`)
-        .addField(`• bot`,`Sends info about me` + n + `=info bot`)
-        .addField(`• guild`,`Sends info about the guild (server)` + n + `=info guild`)
-        .addField(`• channel`,`Sends info about the channel` + n + `=info channel`)
-        .addField(`• role`,`Sends info about a role` + n + `=info role <name> (case sensitive)`)
-        .addField("|--- Fun ---|","Funny cmds")
-        .addField(`• lenny`,`Sends a random lenny face` + n + `=lenny`)
-        .addField(`• meme`,`Sends a random meme` + n + `=meme`)
-        .addField(`• choose`,`Chooses between 2 given options` + n + `=choose <option 1> <option 2>`)
-        .addField(`• dice`,`Rolls a dice` + n + `=dice`)
-        .addField(`• 8ball`,`Answers your yes/no question` + n + `=8ball <question>`)
-  msg.author.send({embed});
-    }
   if(args[0] === "mod"){
         msg.reply("help as been sent to your DMs!")
         const embed = new Discord.RichEmbed()
@@ -320,10 +300,29 @@ if(cmd === "help"){
          .addField(`• choose`,`Chooses between 2 given options` + n + `=choose <option 1> <option 2>`)
          .addField(`• dice`,`Rolls a dice` + n + `=dice`)
          .addField(`• 8ball`,`Answers your yes/no question` + n + `=8ball <question>`)
+         .addField(`• ben`,`Ben users!` + n + `=ben <mention>`)
+         .addField(`• kill`,`kill users!` + n + `=kill <mention>`)
+         .addField(`• slap`,`slap users!` + n + `=slap <mention>`)
+         .addField(`• hug`,`hub users!` + n + `=hug <mention>`)
+         .addField(`• bite`,`bite users!` + n + `=bite <mention>`)
+         .addField(`• kiss`,`kiss users!` + n + `=kiss <mention>`)
+  msg.author.send({embed});
+          }
+  if(args[0] === "other"){
+             msg.reply("help as been sent to your DMs!")
+        const embed = new Discord.RichEmbed()
+  .setTitle(`other`)
+  .setColor(0x00AE86)
+  .setFooter(`P-code`)
+  .setThumbnail(bot.displayAvatarURL)
+  .setTimestamp()
+         .addField(`• invite`,`Sends the invite link of P-code` + n + `=invite`)
+         .addField(`• ping`,`Sends the response time of P-code` + n + `=ping`)
+         .addField(`• uptime`,`Sends the uptime of P-code` + n + `=uptime`)
   msg.author.send({embed});
           }}
-
-  //Moderation cmds
+  
+  //Moderation commands
 if(cmd === "kick") {
   if(pcode.hasPermission('KICK_MEMBERS')){
   if(msg.member.hasPermission('KICK_MEMBERS')) {
@@ -492,7 +491,7 @@ if(pcode.hasPermission("MANAGE_MESSAGES") || pcode.hasPermission("ADMINISTRATOR"
     }  
 }
 
-  //Information cmds
+  //Information commands
 if(cmd === "info"){
  if(args[0] === undefined){
   msg.channel.send("```Info cmds:" + n + "user - gives info about the user" + n +  "bot - gives info about me" + n +  "guild - gives info about the guild" + n + "channel - gives info about the channel" + n + "role - sends info about a role```")}
@@ -539,7 +538,7 @@ if(cmd === "info"){
    if(msg.guild.id === "396799859900022784")
      return msg.channel.send("Yzfire has disabled this cmd.")
    if(pcode.hasPermission('EMBED_LINKS')){
-  let roleArr = msg.guild.roles.array().map(r=> r.name);
+  let roleArr = msg.guild.roles.array().map(r=> r.name );
   const embed = new Discord.RichEmbed()
    .setTitle(`Information about ${msg.guild.name}`)
    .setColor(0x00AE86)
@@ -637,7 +636,7 @@ if(cmd === "membercount" || cmd === "mbc") {
   msg.channel.send(`This server has ${msg.guild.memberCount} members!`)
 }
   
-  //Fun cmds  
+  //Fun commands  
 if(cmd === "lenny") {
  var myArray = ['(づ◔ ͜ʖ◔)づ', '(⌐■_■)', '¯\_ツ_/¯','☞   ͜ʖ  ☞','ᕙ(ꖘヮꖘ)ᕗ','ʢ◉ᴥ◉ʡ','( ͡°Ĺ̯ ͡°)','☞☉﹏☉☞','(╯°□°）╯︵ ┻━┻','┬─┬ ノ( ゜-゜ノ)',];
    var rand = myArray[Math.floor(Math.random() * myArray.length)];
@@ -649,16 +648,12 @@ if(cmd === "meme") {
    msg.channel.send(rand)
 }
 if(cmd === "choose") {
- let option1 = args[0];
- let option2 = args[1];
-  if(!option1)
-    return msg.reply(`You need to give atleast 2 options to choose from!`);
-    if(!option2)
-    return msg.reply(`You need to give atleast 2 options to choose from!`);
-   var myArray = [(option1),(option2),];
-     var rand = myArray[Math.floor(Math.random() * myArray.length)];
-     msg.channel.send(rand)
-}
+    let theirOptions = args.join(" ").split(",");
+    if(!theirOptions || theirOptions.length < 2) return msg.reply(`You must give atleast 2 options to choose from (example: =choose banana, mango)`);
+    let optionsList = theirOptions.map(opt => opt.trim());
+    if(optionsList.includes("@everyone") || optionsList.includes("@here")) return msg.reply("I won't choose from everyone and here mentions C:");
+    const m = msg.channel.send(`${theirOptions[Math.floor(Math.random() * theirOptions.length)]}`)
+    }
 if(cmd === "dice"){
   var randnumber = Math.floor(Math.random()*6) + 1;
   msg.channel.send("You rolled number: " + randnumber);
@@ -699,40 +694,72 @@ if(cmd === "rate") {
    var rand = myArray[Math.floor(Math.random() * myArray.length)];
   msg.channel.send(`I rate **${rateObj}** at ${rand} out of 10!`)
 }
+if(cmd === "roast"){
+  let TBR = msg.mentions.members.first();
+  if(!TBR)
+    return msg.reply("You must give me someone to roast!");
+  var myArray = [`Don't feel bad, a lot of people have no talent.`,'As an outsider, what do you think of the human race?','I would like to kick you in the teeth, but why should I improve your looks?','At least there is one thing good about body. It is not as ugly as your face!','Did your parents ever ask you to run away from home?','If I had a face like yours. I would sue my parents!','Keep talking, someday you will say something intelligent!','Fellows like you do not grow from trees; they swing from them.','You are a man of the world and you know what sad shape the world is in.'];
+  var rand = myArray[Math.floor(Math.random() * myArray.length)];
+  msg.channel.send(`${TBR} ${rand}`)
+}
 if(cmd === "ben"){
   const ben = msg.mentions.members.first() || msg.member;
   if(!ben)
     return msg.reply("You must give me a user to ben")
   msg.channel.send(`Done. **${ben}** has been benned succesfully`)
 }   
-
+if(cmd === "kill") {
+  let killer = msg.author;
+  let killedHuman = msg.mentions.members.first();
+  if(!killedHuman)
+  return msg.reply("You must give me someone to kill!")
+  msg.channel.send(`${killer} killed ${killedHuman}!`)
+}
+if(cmd === "slap") {
+ let killer = msg.author;
+ let killedHuman = msg.mentions.members.first();
+ if(!killedHuman)
+ return msg.reply("You must give me someone to slap!!")
+ msg.channel.send(`${killer} slapped ${killedHuman}!`)
+}
+if(cmd === "hug") {
+  let killer = msg.author;
+  let killedHuman = msg.mentions.members.first();
+  if(!killedHuman)
+  return msg.reply("You must give me someone to hug!")
+  msg.channel.send(`${killer} hugged ${killedHuman}!`)
+}
+if(cmd === "kiss") {
+  let killer = msg.author;
+  let killedHuman = msg.mentions.members.first();
+  if(!killedHuman)
+  return msg.reply("You must give me someone to kiss!")
+  msg.channel.send(`${killer} kissed ${killedHuman}!`)
+}  
+if(cmd === "bite") {
+  let killer = msg.author;
+  let killedHuman = msg.mentions.members.first();
+  if(!killedHuman)
+  return msg.reply("You must give me someone to bite!")
+  msg.channel.send(`${killer} bit ${killedHuman}!`)
+}  
+  
   //Contact and response
 if(cmd === "contact") {
-  if(msg.channel.id === "418430304437534730"){
   const mcontent = args.join(" ");
   if(!mcontent) {
   return msg.reply(`You need to ask a questions or send ideas.`)
  }else {
-  bot.channels.get(`418430304437534730`).send({embed: {
-      color: 333300,
-      fields: [{
-          name: "Contact",
-          value: `**Userid:** ${msg.author.id}` + n + `**Channelid:** ${msg.channel.id}` + n + `**Guildid:** ${msg.guild.id}` + n + `**Text:** ${mcontent}`
-        }
-      ],
-      footer: {
-            }
-          }
-      });
+  bot.channels.get(`418430304437534730`).send(`**${msg.author.tag}** at **#${msg.channel.name}** of server "**${msg.guild.name}**" says:` + n + n + `${mcontent}` + n + n + `(IDs: User: ${msg.author.id}; Channel: ${msg.channel.id}; Server: ${msg.guild.id})`)
+    
   msg.channel.send(`${msg.author} you have contacted succesfully!`)
- }
-} else{
-  msg.reply("This command is disabled in this server. I think you know why...")}
+ } 
 }
-if(cmd === "c-react") {
+if(cmd === "c") {
+  if(args[0] === "response") {
   if(msg.channel.id !== "418430304437534730") return;
-  let channel = args[0];
-  let answer = args.slice(1).join(' ');
+  let channel = args[1];
+  let answer = args.slice(2).join(' ');
   if(!channel)
     return msg.reply("You need to give me a valid channel ID to send to!")
   if(!answer)
@@ -740,8 +767,9 @@ if(cmd === "c-react") {
   bot.channels.get(`${channel}`).send(`${answer} / Answered by ${msg.author.tag}`);
   msg.channel.send(`${msg.author} replied!`)
 }
+}
 
-  //Other cmds
+  //Other commands
 if(cmd === "ping") {
   const m = await msg.channel.send("Calculating the ping...");
     m.edit(`The ping is: ${m.createdTimestamp - msg.createdTimestamp}ms`);
@@ -767,6 +795,39 @@ if(cmd === "invite") {
         });
 
 }
+if(cmd === "calc") {
+  let amount = args[0]
+  let functiona = args[0]
+  let amount2 = args[2]
+  if(!amount)
+    return msg.reply("You need to give atleast 2 numbers")
+  if(!amount2)
+    return msg.reply("You need to give atleast 2 numbers")
+  if(!functiona)
+    return msg.reply("You need to give a function, like `+`,`:` or ``")
+     if(isNaN(amount)) return msg.reply("You need to use numbers with a caclculator")
+   if(isNaN(amount2)) return msg.reply("You need to use numbers with a caclculator")
+       try {
+           var eturn = eval(msg.content.slice(5).trim());
+       }
+       catch (e) {
+           eturn = e;
+       }
+       msg.channel.send({
+           embed: {
+               fields: [
+                   {
+                       name: 'Input',
+                       value: '```'+msg.content.slice(5).trim()+'```'
+                   },
+                   {
+                       name: 'Output',
+                       value: '```'+eturn+'```'
+                   }
+               ]
+           }
+       });
+  }
   
 });
  bot.login(token);
