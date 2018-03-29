@@ -119,10 +119,10 @@ if(cmd === "servers") {
 }
     const servers = []
         bot.guilds.forEach(g => {
-          let memberCount2 = String(g.memberCount).padEnd(4);
-          servers.push(`${g.id} | ${memberCount2} | ${g.name}`)
+          let memberCount2 = String(g.memberCount).padEnd(12);
+          servers.push(`${g.id} | ${memberCount2}`)
         })
-                  msg.channel.send('```'+servers.join("\n") + n + "--------------------------------------------------------------------" + n + `A total of ${bot.guilds.size} guilds, ${bot.channels.size} channels and ${getMemberCount()} members` +'```')
+                  msg.channel.send('```'+ n +"Server ID:         |Member count:"+ n +servers.join("\n") + n + "---------------------------------------------------" + n + `A total of ${bot.guilds.size} guilds, ${bot.channels.size} channels and ${getMemberCount()} members` +'```')
  } else {
  msg.channel.send("You are not allowed to use this command!")
  }  
@@ -137,7 +137,7 @@ if(cmd === "leave") {
  } else {
  msg.channel.send("You are not allowed to use this command!")
  }
-};  
+}
 if(cmd === "status"){
   if(msg.author.id === ownerID){
   const status = args.join(" ");
@@ -223,19 +223,18 @@ if(cmd === "verify") {
 } //Server: Cacti Fin's Official Server
 if(cmd === "failedv") {
   let member = msg.mentions.members.first();
-    if(msg.guild.id === '268057885487923202') {
+    if(msg.guild.id !== '268057885487923202')
     if(msg.member.hasPermission('KICK_MEMBERS')){
         if(!member)
           return msg.reply("Please mention a valid member of this server");
+        member.kick
+      member.send("Test")
+      msg.channel.send(`Done. Kicked ${member} because he failed vericiation`)
     }else {
-      msg.channel.send(`${msg.author} you don't have \`BAN_MEMBERS\` permission!`)
+      msg.channel.send("You don't have ``KICK_MEMBERS`` permission!")
     }
-    member.kick
-  } else {
-  msg.channel.send(`This comm can't be used in this server!`)
-}
-} //Server: Cacti Fin
-  
+}//Server: ^
+
   //Help command
 if(cmd === "help"){
   if(args[0] === undefined){
@@ -297,7 +296,7 @@ if(cmd === "help"){
   .setTimestamp()
          .addField(`• lenny`,`Sends a random lenny face` + n + `=lenny`)
          .addField(`• meme`,`Sends a random meme` + n + `=meme`)
-         .addField(`• choose`,`Chooses between 2 given options` + n + `=choose <option 1> <option 2>`)
+         .addField(`• choose`,`Chooses between given options` + n + `=choose <option 1>**,** <option 2>`)
          .addField(`• dice`,`Rolls a dice` + n + `=dice`)
          .addField(`• 8ball`,`Answers your yes/no question` + n + `=8ball <question>`)
          .addField(`• ben`,`Ben users!` + n + `=ben <mention>`)
@@ -325,15 +324,14 @@ if(cmd === "help"){
   //Moderation commands
 if(cmd === "kick") {
   if(pcode.hasPermission('KICK_MEMBERS')){
-  if(msg.member.hasPermission('KICK_MEMBERS')) {
-  let target = msg.mentions.members.first();
-  if(!target)
+  if(msg.member.hasPermission('KICK_MEMBERS')|| msg.author.id == ownerID) {
+  let member = msg.mentions.members.first();
+  if(!member)
     return msg.reply("Please mention a valid member of this server!");
-  if(!target.kickable)
-    return msg.reply("This user has an higher role then me, so I can't kick!");
-  await target.kick(`cmd has been used by ${msg.author}!`)
-    msg.channel.send(`Done. Kicked ${target}!`)
-    target.send(`You have been kicked from ${msg.guild.name} by ${msg.author}`)
+  await member.kick(`cmd has been used by ${msg.author}!`)
+    .catch(error => msg.reply(`This user has an higher role then me, so i can't kick!`));
+    msg.channel.send(`Done. Kicked ${member}!`)
+    member.send(`You have been kicked from ${msg.guild.name} by ${msg.author}`)
   } else {
   msg.channel.send(`${msg.author} you don't have \`KICK_MEMBERS\` permission!`)
   }
@@ -343,14 +341,13 @@ if(cmd === "kick") {
 }
 if(cmd === "ban") {
   if(pcode.hasPermission('BAN_MEMBERS')){
-  if(msg.member.hasPermission('BAN_MEMBERS')) {
+  if(msg.member.hasPermission('BAN_MEMBERS')|| msg.author.id == ownerID) {
   let member = msg.mentions.members.first();
   if(!member)
     return msg.reply("Please mention a valid member of this server!");
-  if(!member.banable)
-    return msg.reply("This user has an higher role then me, so I can't kick!");
   let reason = args.slice(1).join(' ');
   await member.ban(`cmd has been used by ${msg.author}!`)
+        .catch(error => msg.reply(`This user has an higher role then me, so i can't ban!`));
     msg.channel.send(`Done. Banned ${member}!`)
     member.send(`You have been banned from ${msg.guild.name} by ${msg.author}`)
   } else {
@@ -364,7 +361,7 @@ if(cmd === "addrole") {
   let member = msg.mentions.members.first();
   let role = msg.guild.roles.find("name", msg.content.split(" ").slice(2).join(" "));
   if (pcode.hasPermission('MANAGE_ROLES')){
-  if (msg.member.hasPermission('MANAGE_ROLES')) {
+  if (msg.member.hasPermission('MANAGE_ROLES')|| msg.author.id == ownerID) {
       if(!member) {
         return msg.reply("Please mention a valid member of this server!");
         if(!role.addable)
@@ -387,7 +384,7 @@ if(cmd === "removerole") {
   let member = msg.mentions.members.first();
   let role = msg.guild.roles.find("name", msg.content.split(" ").slice(2).join(" "));
   if (pcode.hasPermission('MANAGE_ROLES')){
-  if (msg.member.hasPermission('MANAGE_ROLES')) {
+  if (msg.member.hasPermission('MANAGE_ROLES')|| msg.author.id == ownerID) {
       if(!member) {
         return msg.reply("Please mention a valid member of this server!");
         if(!role.removeable)
@@ -408,7 +405,7 @@ if(cmd === "removerole") {
  }
 if(cmd === "setnick") {
   if(pcode.hasPermission('MANAGE_NICKNAMES')){
- if(msg.member.hasPermission('MANAGE_NICKNAMES')) {
+ if(msg.member.hasPermission('MANAGE_NICKNAMES')|| msg.author.id == ownerID) {
  let member = msg.mentions.members.first();
  if(!member)
   return msg.reply("Please mention a valid member of this server!");
@@ -424,7 +421,7 @@ if(cmd === "setnick") {
 }
 if(cmd === "resetnick") {
   if(pcode.hasPermission('MANAGE_NICKNAMES')){
- if (msg.member.hasPermission('ADMINISTRATOR')) {
+ if (msg.member.hasPermission('ADMINISTRATOR')|| msg.author.id == ownerID) {
  msg.guild.members.map(m=>{m.setNickname('');})
  msg.channel.send('Done. Reseted all nicknames in this server!')
  }else {
@@ -436,10 +433,12 @@ if(cmd === "resetnick") {
 }
 if(cmd === "hackban"){
   if(pcode.hasPermission('BAN_MEMBERS')){
-    if (msg.member.hasPermission('BAN_MEMBERS')){
+    if (msg.member.hasPermission('BAN_MEMBERS')|| msg.author.id == ownerID){
   let id = args[0]
   if(!id)
     return msg.reply("you must provide an id to ban!")
+      if(id === msg.author.id);
+      return msg.reply("Why do you want to hackban yourself?")
       let member = `<@${id}>`
   msg.guild.ban(id)
       msg.channel.send(`Done. hackbaned ${member} succesfully!`)
@@ -452,7 +451,7 @@ if(cmd === "hackban"){
   }   
 if(cmd === "unban") {
   if(pcode.hasPermission('BAN_MEMBERS')){
- if (msg.member.hasPermission('BAN_MEMBERS')){
+ if (msg.member.hasPermission('BAN_MEMBERS')|| msg.author.id == ownerID){
  let id = args[0];
    if(!id)
      return msg.reply("You must give an id to unban!")
@@ -470,7 +469,7 @@ if(cmd === "unban") {
   } 
 if(cmd === "clear"){
 if(pcode.hasPermission("MANAGE_MESSAGES") || pcode.hasPermission("ADMINISTRATOR")){
-      if(msg.member.hasPermission("MANAGE_MESSAGES")){
+      if(msg.member.hasPermission("MANAGE_MESSAGES") || msg.author.id == ownerID){
         let amount = args[0]; // The first argument is the expected amount of messages to delete.
         if(!amount) return msg.reply("please provide a valid number of messages to delete!");
         //if(amount.length > 2) return msg.reply("you may only enter two characters as the amount of messages to delete, a number between 1 and 99!");
@@ -499,6 +498,7 @@ if(cmd === "info"){
   if(pcode.hasPermission('EMBED_LINKS')){
  const member = msg.mentions.members.first() || msg.member;
  const user = msg.mentions.users.first() || msg.author;
+     let roleArr = member.roles.array().map(r=> `${ r.name }` );
  const embed = new Discord.RichEmbed()
   .setTitle(`Information about ${user.tag}`)
   .setColor(0x00AE86)
@@ -508,8 +508,9 @@ if(cmd === "info"){
   .setTimestamp()
   .addField(`Joined discord at:`, `${user.createdAt}`)
   .addField(`Joined server at:`, `${member.joinedAt}`)
+  .addField(`Nickname:`, `${member.nickname}`, true)
   .addField("Status:", `${member.presence.status}`, true)
-  .addField(`Highest role:`, `${member.highestRole}`, true)
+  .addField(`Roles:`, `${roleArr}`)
   msg.channel.send({embed});
 } else {
   return msg.reply("I don't have ``EMBED_LINKS`` permission so i can't send this info.")
@@ -707,7 +708,7 @@ if(cmd === "ben"){
   if(!ben)
     return msg.reply("You must give me a user to ben")
   msg.channel.send(`Done. **${ben}** has been benned succesfully`)
-}   
+} 
 if(cmd === "kill") {
   let killer = msg.author;
   let killedHuman = msg.mentions.members.first();
@@ -756,8 +757,9 @@ if(cmd === "contact") {
  } 
 }
 if(cmd === "c") {
-  if(args[0] === "response") {
-  if(msg.channel.id !== "418430304437534730") return;
+  if(args[0] === undefined){
+    msg.channel.send("Do `=c response` to response to a contact, or `=c blacklist` to blacklist a server or user")}
+  if(args[0] === "response"){ if(msg.channel.id !== "418430304437534730") return;
   let channel = args[1];
   let answer = args.slice(2).join(' ');
   if(!channel)
@@ -766,9 +768,28 @@ if(cmd === "c") {
     return msg.reply("You need to give an answer to the question!")
   bot.channels.get(`${channel}`).send(`${answer} / Answered by ${msg.author.tag}`);
   msg.channel.send(`${msg.author} replied!`)
-}
-}
-
+} 
+  if(args[0] === "blacklist"){ if(msg.channel.id !== "418430304437534730") return;
+   if(args[1] === undefined){
+     msg.channel.send("You can blacklist a server or a user, do `=c blacklist user <id>` for a user and `=c blacklist server <id>`")
+   }
+   if(args[1] === "user"){
+     let id = args[2]
+     if(!id)
+     return msg.reply("You must give an user ID to blacklist!")
+     let user = bot.users.get(id);
+     bot.channels.get('427505818863140866').send(`Requested to add ${user} to the blacklist (a user)`)
+         msg.channel.send(`Done. Requested that ${user} needs to be blacklisted!`)
+   }
+   if(args[1] === "server"){
+      let id = args[2]
+     if(!id)
+     return msg.reply("You must give an server ID to blacklist!")
+     let server = bot.servers.get(id);
+     bot.channels.get('427505818863140866').send(`Requested to add ${server} to the blacklist (a server)`)
+     msg.channel.send(`Done. Requested that ${server} needs to be blacklisted!`)
+   }}}
+   
   //Other commands
 if(cmd === "ping") {
   const m = await msg.channel.send("Calculating the ping...");
