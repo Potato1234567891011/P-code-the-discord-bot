@@ -1,21 +1,18 @@
-// do not change these lines of code. This is to allow the bot to remain hosted on glitch.com 24/7.
 const http = require('http');
 const express = require('express');
 const app = express();
-
 app.get("/", (request, response) => {
   console.log(Date.now() + " Ping Received");
   response.sendStatus(200);
-}); //Glitch stuff
-app.listen(process.env.PORT);               // ^
+});
+app.listen(process.env.PORT);
 setInterval(() => {
   http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
-}, 280000);          // ^
+}, 280000);
 
 //Main var's
 const Discord = require("discord.js");
-const prefix = "=";
-const token = process.env.TOKEN;
+const token = "NDE5ODA2NzQ0OTA3MzUwMDE3.DZWOWQ.oc6D35s_I2Z_WzjJjTESRRg-K5s";
 const bot = new Discord.Client();
 const Enmap = require("enmap");
 const EnmapLevel = require("enmap-level");
@@ -24,6 +21,16 @@ const snekfetch = require('snekfetch');
 const querystring = require('querystring');
 const Cleverbot = require("cleverbot-node");
 const clbot = new Cleverbot;
+const prefix = "=";
+const blacklistSource = new EnmapLevel({name: "blacklistedPeople"});
+bot.blacklist = new Enmap({provider: blacklistSource});
+const guildSettingsTable = new EnmapLevel({name: "guildSettings"});
+bot.guildSettings = new Enmap({provider: guildSettingsTable});
+const defaultSettings = {
+  prefix: "=",
+  modlog: "430291457509818368",
+  amtmodlogs: 0
+}
 
 bot.on("ready", () => {
 bot.user.setActivity("Do =help, or =contact!", {type: "playing"});
@@ -38,37 +45,40 @@ bot.on("guildCreate", guild => {
 
 bot.on("guildDelete", guild => {
   bot.channels.get(`412973894912180235`).send(`I have been removed to: ${guild.name} (id: ${guild.id})`);
-}); //When i get removed from a guild 
+}); //When i get removed from a guild
 
 bot.on("message", async msg => {
   if(msg.channel.type === `group`) return;
   if(msg.channel.type === `dm`) return;
   if(msg.content.indexOf(prefix) !==0) return;
   if(msg.author.bot) return;
-  
+  if(bot.blacklist.get(msg.author.id)) return;
+
   const args = msg.content.slice(prefix.length).trim().split(/ +/g);
   const cmd = args.shift().toLowerCase();
   const ownerID = "310853886191599616";
-  const pcode = msg.guild.members.get("419806744907350017")
-  const blacklist = ["","","","","","","","",""]
-  if(blacklist.includes(msg.author.id)) return msg.channel.send(":warning: You are blacklisted!");
-  
-  //NOTE calculating uptime 
+  const pcode = msg.guild.members.get("419806744907350017");
+  const guildConfig = bot.guildSettings.get(msg.guild.id); // We now have access to that object that we set for when the bot was added in a server
+
+
+//calculating uptime
 function format(seconds){
   function pad(s){
     return (s < 10 ? '0' : '') + s;
   }
+  var days = Math.floor(seconds / (1000*60*60*24));
   var hours = Math.floor(seconds / (60*60));
   var minutes = Math.floor(seconds % (60*60) / 60);
   var seconds = Math.floor(seconds % 60);
 
-  return (hours) + ' hours, ' + (minutes) + ' minutes and ' + (seconds) + ' seconds.';
+  return (days) + ' days, ' +(hours) + ' hours, ' + (minutes) + ' minutes and ' + (seconds) + ' seconds.';
 } //Calculating uptime
 
-//Variables 
+
+//Variables
 var uptime = process.uptime();
 var n = "\n";
-  
+
 //Developer commands
 if(cmd === "restart"){
   if(msg.author.id === ownerID) {
@@ -76,7 +86,7 @@ if(cmd === "restart"){
  } else {
  msg.channel.send(":warning: You are not allowed to use this command!")
  }
-  }  
+  }
 if(cmd === "eval"){
      if(msg.author.id === ownerID){
        try {
@@ -89,7 +99,7 @@ if(cmd === "eval"){
   } else {
  msg.channel.send(":warning: You are not allowed to use this command!")
  }
-}  
+}
 if(cmd === "say"){
   if(msg.author.id === ownerID) {
     const saymsg = args.join(" ");
@@ -98,25 +108,25 @@ if(cmd === "say"){
  } else {
  msg.channel.send(":warning: You are not allowed to use this command!")
  }
-} 
+}
 if(cmd === "servers"){
   if(msg.author.id === ownerID){
   const getMemberCount = () => {
   let amount = 0;
   bot.guilds.forEach(c=>amount+=c.memberCount);
   return amount;
-}
+  }
     const servers = []
         bot.guilds.forEach(g => {
           let servernames = String(g.name).padEnd(20);
           let memberCount2 = String(g.memberCount).padEnd(20);
-          servers.push(`${g.id} | ${memberCount2} | ${servernames}`)
+          servers.push(`${g.id} | ${memberCount2}`)
         })
-                  msg.channel.send('```'+ n +"Server ID:         |Member count:         |Server names:"+ n +servers.join("\n") + n + "-----------------------------------------------------------------------" + n + `A total of ${bot.guilds.size} guilds, ${bot.channels.size} channels and ${getMemberCount()} members` +'```')
+                  msg.channel.send('```'+ n +"Server ID:         |Member count:"+ n +servers.join("\n") + n + "---------------------------------------------------------------------" + n + `A total of ${bot.guilds.size} guilds, ${bot.channels.size} channels and ${getMemberCount()} members` +'```')
  } else {
  msg.channel.send(":warning: You are not allowed to use this command!")
- }  
-}  
+ }
+}
 if(cmd === "leave"){
   if(msg.author.id === ownerID) {
     const args = msg.content.slice(prefix.length).trim().split(/ +/g);
@@ -138,7 +148,7 @@ if(cmd === "status"){
  } else {
  msg.channel.send(":warning: You are not allowed to use this command!")
  }
-} 
+}
 if(cmd === "sinfo"){
    if(msg.author.id === ownerID){
    if(pcode.hasPermission('EMBED_LINKS')){
@@ -161,22 +171,22 @@ if(cmd === "sinfo"){
    .addField("Verification level:", `${guild.verificationLevel}`, true)
    .addField(`Roles:`,`${roleArr}`)
    msg.channel.send({embed});
-} else {
+ } else {
   return msg.channel.send(":warning: I do not have the `EMBED_LINKS`! So I am not able to send the information!")
-}
-} else {
- msg.channel.send(":warning: You are not allowed to use this command!")
+ }
+ } else {
+  msg.channel.send(":warning: You are not allowed to use this command!")
  }
 }
-if(cmd === "uinfo"){ 
+if(cmd === "uinfo"){
    if(msg.author.id === ownerID){
-if(pcode.hasPermission('EMBED_LINKS')){
+  if(pcode.hasPermission('EMBED_LINKS')){
   let id = args[0]
   if(!id)
     return msg.channel.send(":warning: You must give me an user ID!")
- const member = bot.users.get(id)
- const user = bot.users.get(id)
- const embed = new Discord.RichEmbed()
+  const member = bot.users.get(id)
+  const user = bot.users.get(id)
+  const embed = new Discord.RichEmbed()
   .setTitle(`Information about ${user.tag}`)
   .setColor(0x00AE86)
   .setDescription(`ID: ${member.id}`)
@@ -186,29 +196,72 @@ if(pcode.hasPermission('EMBED_LINKS')){
   .addField(`Joined discord at:`, `${user.createdAt}`)
   .addField("Status:", `${member.presence.status}`, true)
   msg.channel.send({embed});
-} else {
+  } else {
   return msg.channel.send(":warning: I do not have the `EMBED_LINKS` permission! So I am not able to send this information!")
-}
-} else {
+ }
+ } else {
  msg.channel.send(":warning: You are not allowed to use this command!")
  }
-}  
-if(cmd === "cinvite"){  
-if(msg.author.id === ownerID){
-const id = args[0]
-if(!id)
+}
+if(cmd === "cinvite"){
+ if(msg.author.id === ownerID){
+ const id = args[0]
+ if(!id)
   return msg.channel.send(":warning: You must give me an server ID")
-const guild = bot.guilds.get(id)
-const defaultChannel = guild.channels.find(c=> c.permissionsFor(guild.me).has("SEND_MESSAGES"));
-const invite = await defaultChannel.createInvite().catch(error => msg.channel.send(`:warning: I can not create an invite to this server!`));
+ const guild = bot.guilds.get(id)
+ const defaultChannel = guild.channels.find(c=> c.permissionsFor(guild.me).has("SEND_MESSAGES"));
+ const invite = await defaultChannel.createInvite().catch(error => msg.channel.send(`:warning: I can not create an invite to this server!`));
   msg.channel.send(`${invite}`)
   } else {
  msg.channel.send(":warning: You are not allowed to use this command!")
  }
-}  
+}
+if(cmd === "blacklist"){
+  if(msg.author.id !== ownerID) return msg.reply("you are not authorized to edit P-code's blacklist."); // Is the person trying to execute the command the developer?
+  let possibleOptions = ["add", "remove"];
+  let option = args[0];
+  if(!possibleOptions.includes(option)) return msg.reply(`please provide a valid option. Valid options are:\n${possibleOptions.join(", ")}`);
+  if(option === "add"){
+    let mention = msg.mentions.members.first();
+    let personToBlackList;
+    if(mention){
+      personToBlackList = mention.id;
+    }else{
+      personToBlackList = args[1];
+    }
+    //let personToBlackList = msg.mentions.members.first().id || args[0]; // It's the first mention, or the value or args[0].
+    let reason = args.slice(2).join(" "); // Optional reason.
+    if(!personToBlackList) return msg.reply("please provide a member to blacklist."); // Was an ID or member provided?
+    if(isNaN(personToBlackList) || personToBlackList.length !== 18) return msg.reply("please provide a valid user ID or mention."); // Is the person to blacklist actually an ID? Does it have a length of 18 and is it a number?
+    if(personToBlackList === "310853886191599616") return msg.reply("why are you trying to blacklist yourself?");
+    if(personToBlackList === "419806744907350017") return msg.reply(`you cannot add P-code to the it's own blacklist.`);
+    if(!reason) reason = "None specified.";
+    let someObject = {
+      reason: reason
+    }
+
+    bot.blacklist.set(personToBlackList, someObject);
+    msg.reply(`blacklisted the ID ${personToBlackList} from using P-code successfully!`);
+    }else if(option === "remove"){
+    let mention = msg.mentions.members.first();
+    let personToRemove;
+    if(mention){
+      personToRemove = mention.id;
+    }else{
+      personToRemove = args[1];
+    }
+    //let personToBlackList = msg.mentions.members.first().id || args[0]; // It's the first mention, or the value or args[0].
+    let reason = args.slice(2).join(" "); // Optional reason.
+    if(!personToRemove) return msg.reply("please provide a member to remove from the blacklist."); // Was an ID or member provided?
+    if(isNaN(personToRemove) || personToRemove.length !== 18) return msg.reply("please provide a valid user ID or mention."); // Is the person to blacklist actually an ID? Does it have a length of 18 and is it a number?
+    if(!bot.blacklist.get(personToRemove)) return msg.reply(`the user with the ID of ${personToRemove} is not in the blacklist.`);
+    bot.blacklist.delete(personToRemove);
+    msg.reply(`the user with the ID of ${personToRemove} was removed from the blacklist.`);
+  }
+}
 
 //Server commands
-if(cmd === "verify")  {
+if(cmd === "verify"){
     let member = msg.mentions.members.first();
     let role = msg.guild.roles.find("name", "Verified");
     if(msg.guild.id === '268057885487923202') {
@@ -219,16 +272,15 @@ if(cmd === "verify")  {
         if(role == null) {
             msg.channel.send(":warning: There is no role called 'Verified'!")
         } else
-      msg.channel.send(`:white_check_mark: Done. added ${role} to ${member}!`)
+      msg.channel.send(`:white_check_mark: Done. Added ${role} to ${member}!`)
     }else {
       msg.channel.send(":warning: You do not have the \`BAN_MEMBERS\` permission!")
     }
     member.addRole(role, `verify command has been used by ${msg.author.tag}`)
   } else {
   msg.channel.send(":warning: This command cannot be used in this server!")
-}
-} //Server: Cacti Fin's Official Server
-if(cmd === "failedv") {
+}}
+if(cmd === "failedv"){
   let member = msg.mentions.members.first();
     if(msg.guild.id !== '268057885487923202') return;
     if(msg.member.hasPermission('KICK_MEMBERS')){
@@ -240,37 +292,21 @@ if(cmd === "failedv") {
     }else {
       msg.channel.send(":warning: You do not have the ``KICK_MEMBERS`` permission!")
     }
-} //Server: Cacti Fin's Official Server
+}
 
-//Google command
-if(cmd === "google") {
- let searchUrl = `https://www.google.com/search?q=${encodeURIComponent(msg.content)}&safe=active`;
-   return snekfetch.get(searchUrl).then((result) => {
-      let $ = cheerio.load(result.text);
-      let googleData = $('.r').first().find('a').first().attr('href');
-      googleData = querystring.parse(googleData.replace('/url?', ''));
-     msg.channel.send(`${googleData.q}`)
-  }).catch((err) => {
-     msg.channel.send(':warning: No results found!');
-  });
-}  
-
-  //Help command
+//Help command
 if(cmd === "help"){
   if(args[0] === "verification"){
     if(msg.guild.id !== '268057885487923202') return;
  if(msg.member.hasPermission('MANAGE_MESSAGES')){
       msg.channel.send('```'+"Verification commands for Cacti Fin's Official Server:"+ n + " " + n + "• verify   - verify a user                                    =verify <mention>" + n + "• failedv  - kick a user because he/she failed verification   =failedv <mention>"+'```')
-} else return msg.channel.send(":warning: You are not staff, so you are not allowed to see this")
+ } else return msg.channel.send(":warning: You are not staff, so you are not allowed to see this")
     } else {
- msg.author.send('```'+"P-code, a multi function discord bot. Developed by Potato#6163" + n + " " + n + "Moderation:" + n + "• kick      - kicks a user from the server.     =kick <mention> <reason> (reason is optional)" + n + "• ban       - bans a user from the server.      =ban <mention> <reason> (reason is optional)" + n + "• addrole   - adds a role to a user.            =addrole <mention> <role> (=addrole everyone <role> for everyone)" + n + "• removole  - removes a role from a user.       =removerole <mention> <role> (=removerole everyone <role> for everyone)" + n + "• setnick   - changes a nicknme of a user.      =setnick <mention> <new name> (leave <new name> blank to reset the nickname)" + n + "• resetnick - resets all nicknames in a server. =setnick" + n + "• hackban   - bans a user using their ID.       =hackban <ID>" + n + "• unban     - unbans a user using their ID.     =unban <ID>" + n + "• clear     - clears messages in the channel    =clear <amount> (max <amount> is 99)" + n + " " + n + "Information:" + n + "• user      - shows info about a user           =info user <mention> (leave <mention> blank for your information" + n + "• bot       - shows info about me               =info bot" + n + "• server    - shows info about the server       =info guild OR =info server" + n + "• channel   - shows info about the channel      =info channel" + n + "• avatar    - shows a user his avatar           =avatar <mention> (leave <mention blank to get your avatar)" + n + "• mbc       - shows the amount of members       =mbc OR =membercount" + n + "• roles     - shows all the roles               =roles" + n + "• perms     - shows all the perms of a user     =perms" +'```') 
- msg.author.send('```'+"Fun:" + n +"• google    - google the world wide web!        =google <the thing you want to google>" + n +"• lenny     - sends a funny face in chat        =lenny" + n + "• meme      - sends a random meme               =meme" + n + "• choose    - chooses between options           =choose <option1>, <option2> etc..." + n + "• dice      - rolls a dice                      =dice" + n + "• 8ball     - answers your yes/no question      =8ball <question> (MUST be a yes no question)" + n + "• rate      - rates your given thing            =rate <thing to rate>" + n + "• roast     - roast a user                      =roast <mention>" + n + "• ben       - ben a user (ben = fake ban)       =ben <mention>"  + n + "• kill      - kill a user                       =kill <mention>" + n + "• slap      - slap a user                       =slap <mention>" + n + "• kiss      - kiss a user                       =kiss <mention>" + n + "• bite      - bite a user                       =bite <mention>" + n + "• hug       - hug a user                        =hug <mention>" + n + "• calc      - use a calculator                  =calc <som>" + n + "• quote     - get a random quote                =quote " + n + " " + n + "Other:" + n + "• ping      - shows the bot response time       =ping" + n + "• uptime    - shows the bot uptime              =uptime" + n + "• invite    - shows the bot invite link         =invite" + n + " " + n + "If you need any other help, do =contact <question> and the developer will react as soon as he can!"     +'```') 
- msg.channel.send(":white_check_mark: Help has been sent to your DMs!")   
-  if(msg.author.id === ownerID)
-    msg.author.send('```'+"Developer commands:" + n + " " + n + "• restart - restarts the bot                        =restart" + n + "• eval    - eval the shit out of stuff              =eval <shit>" + n + "• say     - talk through the bot                    =say <sentence>" + n + "• servers - shows the servers where the bot is in   =servers" + n + "• leave   - leave a server using ID                 =leave <ID>" + n + "• status  - change the bots status                  =status <status>" + n + "• sinfo   - check server info using ID              =sinfo <ID>" + n + "• uinfo   - check user info using ID                =uinfo <ID>"+'```')
-  }
-  }  
-  
+ msg.author.send('```'+"P-code, a multi function discord bot. Developed by Potato#6163" + n + " " + n + "Moderation:" + n + "• mute      - disables a user from talking      =mute <mention> <time in minutes>" + n + "• unmute    - enables a user from talking       =unmute <mention>" + n + "• kick      - kicks a user from the server.     =kick <mention> <reason> (reason is optional)" + n + "• ban       - bans a user from the server.      =ban <mention> <reason> (reason is optional)" + n + "• addrole   - adds a role to a user.            =addrole <mention> <role> (=addrole everyone <role> for everyone)" + n + "• removole  - removes a role from a user.       =removerole <mention> <role> (=removerole everyone <role> for everyone)" + n + "• setnick   - changes a nicknme of a user.      =setnick <mention> <new name> (leave <new name> blank to reset the nickname)" + n + "• resetnick - resets all nicknames in a server. =setnick" + n + "• hackban   - bans a user using their ID.       =hackban <ID>" + n + "• unban     - unbans a user using their ID.     =unban <ID>" + n + "• clear     - clears messages in the channel    =clear <amount> (max <amount> is 99)" + n + " " + n + "Information:" + n + "• user      - shows info about a user           =info user <mention> (leave <mention> blank for your information" + n + "• bot       - shows info about me               =info bot" + n + "• server    - shows info about the server       =info guild OR =info server" + n + "• channel   - shows info about the channel      =info channel" + n + "• avatar    - shows a user his avatar           =avatar <mention> (leave <mention blank to get your avatar)" + n + "• mbc       - shows the amount of members       =mbc OR =membercount" + n + "• roles     - shows all the roles               =roles" + n + "• perms     - shows all the perms of a user     =perms" +'```')
+ msg.author.send('```'+"Fun:" + n +"• google    - google the world wide web!        =google <the thing you want to google>" + n +"• lenny     - sends a funny face in chat        =lenny" + n + "• meme      - sends a random meme               =meme" + n + "• choose    - chooses between options           =choose <option1>, <option2> etc..." + n + "• dice      - rolls a dice                      =dice" + n + "• 8ball     - answers your yes/no question      =8ball <question> (MUST be a yes no question)" + n + "• rate      - rates your given thing            =rate <thing to rate>" + n + "• roast     - roast a user                      =roast <mention>" + n + "• ben       - ben a user (ben = fake ban)       =ben <mention>"  + n + "• kill      - kill a user                       =kill <mention>" + n + "• slap      - slap a user                       =slap <mention>" + n + "• kiss      - kiss a user                       =kiss <mention>" + n + "• bite      - bite a user                       =bite <mention>" + n + "• hug       - hug a user                        =hug <mention>" + n + "• calc      - use a calculator                  =calc <som>" + n + "• quote     - get a random quote                =quote " + n + " " + n + "Other:" + n + "• ping      - shows the bot response time       =ping" + n + "• uptime    - shows the bot uptime              =uptime" + n + "• invite    - shows the bot invite link         =invite" + n + " " + n + "If you need any other help, do =contact <question> and the developer will react as soon as he can!"     +'```')
+ msg.channel.send(":white_check_mark: Help has been sent to your DMs!")
+}}
+
 //Moderation commands
 if(cmd === "kick"){
   if(pcode.hasPermission('KICK_MEMBERS')){
@@ -288,7 +324,7 @@ if(cmd === "kick"){
   }else {
     msg.channel.send(":warning: I do not have ``KICK_MEMBERS`` permission!")
   }
-}       
+}
 if(cmd === "ban"){
   if(pcode.hasPermission('BAN_MEMBERS')){
   if(msg.member.hasPermission('BAN_MEMBERS')|| msg.author.id == ownerID) {
@@ -306,7 +342,7 @@ if(cmd === "ban"){
   }else {
     msg.channel.send(":warning: I do not have ``BAN_MEMBERS`` permission!")
   }
-}  
+}
 if(cmd === "addrole"){
   if(args[0] === "everyone") {
       if(pcode.hasPermission("MANAGE_ROLES") || pcode.hasPermission("ADMINISTRATOR")){
@@ -314,20 +350,20 @@ if(cmd === "addrole"){
   let role = msg.content.slice(18).trim();
   if(!role)
    return msg.channel.send(":warning: You must give a role to add!");
-         if(!msg.guild.roles.find("name", role)) 
+         if(!msg.guild.roles.find("name", role))
   return msg.channel.send(":warning: I cannot find this role, did you spell it right?");
-msg.guild.members.forEach(m=>m.addRole(msg.guild.roles.find('name', role))); msg.channel.send(`:white_check_mark: Done. added ${role} to everyone!`);
-} else {
+  msg.guild.members.forEach(m=>m.addRole(msg.guild.roles.find('name', role))); msg.channel.send(`:white_check_mark: Done. added ${role} to everyone!`);
+ } else {
   msg.channel.send(":warning: You dont have the `ADMINISTRATOR` permission!")
-}
+ }
    } else {
      msg.channel.send(":warning: I do not have the `MANAGE_ROLES` permission!")
    }
-} else {
+ } else {
     if(pcode.hasPermission("MANAGE_ROLES") || pcode.hasPermission("ADMINISTRATOR")){
       if(msg.member.hasPermission("MANAGE_ROLES") || msg.member.hasPermission("ADMINISTRATOR") || msg.author.id === msg.guild.ownerID){
-        let roleToAdd = args.slice(1).join(" "); 
-        let memb = msg.mentions.members.first(); 
+        let roleToAdd = args.slice(1).join(" ");
+        let memb = msg.mentions.members.first();
         if(!memb) return msg.channel.send(":warning: You must mention someone of this server!");
         if(!roleToAdd) return msg.channel.send(":warning: You must give a role to add!");
         if(!msg.guild.roles.find("name", roleToAdd)) return msg.channel.send(":warning: I cannot find this role,a did you spell it right?");
@@ -346,9 +382,8 @@ msg.guild.members.forEach(m=>m.addRole(msg.guild.roles.find('name', role))); msg
     }else{
       return msg.channel.send(":warning: I do not have the ``MANAGE_ROLES`` permission!");
     }
-  
-}
-}  
+
+}}
 if(cmd === "removerole"){
    if(args[0] === "everyone") {
       if(pcode.hasPermission("MANAGE_ROLES") || pcode.hasPermission("ADMINISTRATOR")){
@@ -356,20 +391,20 @@ if(cmd === "removerole"){
   let role = msg.content.slice(21).trim();
   if(!role)
    return msg.channel.send(":warning: You must give a role to remove from everyone");
-         if(!msg.guild.roles.find("name", role)) 
+         if(!msg.guild.roles.find("name", role))
   return msg.channel.send(":warning: I cannot find this role, did you spell it right?");
-msg.guild.members.forEach(m=>m.removeRole(msg.guild.roles.find('name', role))); msg.channel.send(`:white_check_mark: Done. removed ${role} from everyone`);
-} else {
+ msg.guild.members.forEach(m=>m.removeRole(msg.guild.roles.find('name', role))); msg.channel.send(`:white_check_mark: Done. removed ${role} from everyone`);
+  } else {
   msg.channel.send(":warning: You dont have the `ADMINISTRATOR` permission!")
-}
+  }
    } else {
      msg.channel.send(":warning: I do not have the `MANAGE_ROLES` permission!")
    }
    } else {
    if(pcode.hasPermission("MANAGE_ROLES") || pcode.hasPermission("ADMINISTRATOR")){
       if(msg.member.hasPermission("MANAGE_ROLES") || msg.member.hasPermission("ADMINISTRATOR") || msg.author.id === msg.guild.ownerID){
-        let roleToAdd = args.slice(1).join(" "); 
-        let memb = msg.mentions.members.first(); 
+        let roleToAdd = args.slice(1).join(" ");
+        let memb = msg.mentions.members.first();
         if(!memb) return msg.channel.send(":warning: You must mention someone of this server!");
         if(!roleToAdd) return msg.channel.send(":warning: You must give a role to remove!");
         if(!msg.guild.roles.find("name", roleToAdd)) return msg.channel.send(":warning: I cannot find a role with that name, did you spell it right?");
@@ -389,7 +424,7 @@ msg.guild.members.forEach(m=>m.removeRole(msg.guild.roles.find('name', role))); 
       return msg.channel.send(":warning: I do not have the ``MANAGE_ROLES`` permission!");
     }
    }
-}  
+}
 if(cmd === "setnick"){
     if(pcode.hasPermission("MANAGE_NICKNAMES") || pcode.hasPermission("ADMINISTRATOR")){
       if(msg.member.hasPermission("MANAGE_NICKNAMES") || msg.member.hasPermission("ADMINISTRATOR") || msg.author.id === msg.guild.ownerID){
@@ -400,7 +435,7 @@ if(cmd === "setnick"){
         let membHighestRole = memb.highestRole.position;
         if(membHighestRole >= authorHighestRole && membHighestRole >= pcodeHighRole && msg.author.id !== msg.guild.ownerID) return msg.channel.send(":warning: That user has a role role than you and me!");
         if(membHighestRole >= authorHighestRole && msg.author.id !== msg.guild.ownerID) return msg.channel.send(":warning: That user has a higher role than you!");
-        if(membHighestRole >= pcodeHighRole) return msg.channel.send(":warning: That user has a higher role than!"); 
+        if(membHighestRole >= pcodeHighRole) return msg.channel.send(":warning: That user has a higher role than!");
         if(memb.id === msg.guild.ownerID) return msg.channel.send(`:warning: I cannot change the nickname of the server owner!`);
         let inputtedNick = args.slice(1).join(" ");
         if(!inputtedNick) return msg.channel.send(":warning: Please provide a nickname to set!");
@@ -422,10 +457,9 @@ if(cmd === "resetnick"){
  }else {
   msg.channel.send(`:warning: You are not an admin!`)
  }
-} else {
+ } else {
   msg.channel.send(":warning: I do not have ``MANAGE_NICKNAMES`` permission!")
-}
-}  
+}}
 if(cmd === "hackban"){
   if(pcode.hasPermission('BAN_MEMBERS')){
     if (msg.member.hasPermission('BAN_MEMBERS')|| msg.author.id == ownerID){
@@ -439,11 +473,11 @@ if(cmd === "hackban"){
       msg.channel.send(`:white_check_mark: Done. hackbaned ${member} succesfully!`)
   } else {
   msg.channel.send(":warning: You do not have the \`BAN_MEMBERS\` permission!")
-  } 
+  }
     } else {
   msg.channel.send(":warning: do not have the \`BAN_MEMBERS\` permission!")
-  } 
-  }   
+  }
+}
 if(cmd === "unban"){
   if(pcode.hasPermission('BAN_MEMBERS')){
  if (msg.member.hasPermission('BAN_MEMBERS')|| msg.author.id == ownerID){
@@ -454,16 +488,16 @@ if(cmd === "unban"){
    var person = bans.find('id',id).id;
     msg.guild.unban(person, `unban command has been used by ${msg.author.tag}`);
      msg.channel.send(`:white_check_mark: Done. unbanned <@${id}>!`)
- });
-} else {
- msg.channel.send(`:warning: ${msg.author} you do not have \`BAN_MEMBERS\` permission!`)
+  });
+  } else {
+  msg.channel.send(`:warning: ${msg.author} you do not have \`BAN_MEMBERS\` permission!`)
   }
   } else {
   msg.channel.send(`:warning: ${msg.author} I do not have \`BAN_MEMBERS\` permission!`)
-  } 
-  }   
+  }
+  }
 if(cmd === "clear"){
-if(pcode.hasPermission("MANAGE_MESSAGES") || pcode.hasPermission("ADMINISTRATOR")){
+ if(pcode.hasPermission("MANAGE_MESSAGES") || pcode.hasPermission("ADMINISTRATOR")){
       if(msg.member.hasPermission("MANAGE_MESSAGES") || msg.author.id == ownerID){
         let amount = args[0]; // The first argument is the expected amount of messages to delete.
         if(!amount) return msg.channel.send("please provide a valid number of messages to delete!");
@@ -482,22 +516,78 @@ if(pcode.hasPermission("MANAGE_MESSAGES") || pcode.hasPermission("ADMINISTRATOR"
       }
     }else{
       return msg.channel.send(":warning: I do not have the ``MANAGE_MESSAGES`` permission!");
-    }  
+    }
+}
+if(cmd === "mute") {
+  if(pcode.hasPermission("MANAGE_ROLES")){
+    if(msg.member.hasPermission('KICK_MEMBERS')) {
+      const role = msg.guild.roles.find("name", "P-codeMuted")
+      let member = msg.mentions.members.first();
+      if(!member)
+      return msg.channel.send(":warning: You must mention someone of this server!");
+      if(member.roles.has(role))
+      return msg.channel.send(":warning: That user is already muted!");
+      let time = args[1];
+      if(!time) {
+      let time = 10
+    }
+   if(!role) {
+   msg.channel.send(":warning: The muted role was not found, i will create one now.");
+   msg.guild.createRole({
+     name: 'P-codeMuted',
+     color: 'BLACK',
+   })
+   } else {
+     msg.guild.channels.forEach(c => {
+                c.overwritePermissions(role, {
+                  SEND_MESSAGES: false
+                })
+              })
+              let time = args[1];
+              member.addRole(role)  
+              setTimeout(myFunction, `${time * 60000}`)
+              msg.channel.send(`:white_check_mark: Done. Muted ${member} for ${time || 10} mins!`)
+              function myFunction() {
+                member.removeRole(role)
+              }
+   }
+   } else {
+    return msg.channel.send(":warning: You do not have the `KICK_MEMBERS` permission!");
+   }
+   }else {
+    return msg.channel.send(":warning: I do not have the `MANAGE_ROLE` permission!");
+   }
+ }
+if(cmd === "unmute"){
+  if(pcode.hasPermission("MANAGE_ROLES")){
+  if(msg.member.hasPermission('KICK_MEMBERS')) {
+  const role = msg.guild.roles.find("name", "P-codemuted");
+    let member = msg.mentions.members.first();
+    if(!msg.member.roles.has(role))
+      return msg.channel.send(":warning: That user is not muted!")
+    member.removeRole(role)
+    msg.channel.send(`:white_check_mark: Done. Unmuted ${member}`)
+  }else{
+    return msg.channel.send(":warning: You do not have the ``KICK_MEMBERS`` permission!");
+  }
+ }else{
+  return msg.channel.send(":warning: I do not have the ``MANAGE_ROLES`` permission!");
+ }
 }
 
-//Information commands 
+//Information commands
 if(cmd === "info"){
  if(args[0] === undefined){
   msg.channel.send("```Info commands:  (=info <command>)" + n + " " + n + "• user    - gives info about the user" + n +  "• bot     - gives info about me" + n +  "• guild   - gives info about the guild" + n + "• channel - gives info about the channel" + n + "• role    - gives info about a role```")}
  if(args[0] === "user"){
   if(pcode.hasPermission('EMBED_LINKS')){
- const member = msg.mentions.members.first();
- const user = msg.mentions.users.first();
+  const member = msg.mentions.members.first();
+  const user = msg.mentions.users.first();
     if(!member)
       msg.channel.send(":warning: You must mention someone of this server!")
      let roleArr = member.roles.array().map(r=> `${ r.name }` );
        let finalRoles = roleArr.join(", ");
- const embed = new Discord.RichEmbed()
+  const embed = new Discord.RichEmbed()
   .setTitle(`Information about ${user.tag}`)
   .setColor(0x00AE86)
   .setDescription(`Joined Discord on ${user.createdAt}`)
@@ -509,10 +599,8 @@ if(cmd === "info"){
   .addField("Status:", `${member.presence.status}`, true)
   .addField(`Roles:`, `${finalRoles}`)
   msg.channel.send({embed});
-} else {
-  return msg.channel.send(":warning: I do not have ``EMBED_LINKS`` permission! So i cannot send this infomation.")
-}
-}
+  } else {
+  return msg.channel.send(":warning: I do not have ``EMBED_LINKS`` permission! So i cannot send this infomation.")}}
  if(args[0] === "bot"){
    if(pcode.hasPermission('EMBED_LINKS')){
   const embed = new Discord.RichEmbed()
@@ -528,17 +616,16 @@ if(cmd === "info"){
    .addField(`Ping:`, `${Math.round(bot.ping)}ms`, true)
    .addField(`Uptime:`, format(uptime), true)
    msg.channel.send({embed});
-} else {
+  } else {
   return msg.channel.send(":warning: I do not have ``EMBED_LINKS`` permission! So i cannot send this information!")
-}
-}
+  }}
  if(args[0] === "guild" || args[0] === "server") {
    if(msg.guild.id === "396799859900022784")
      return msg.channel.send(":warning: Yzfire has disabled this command!")
    if(pcode.hasPermission('EMBED_LINKS')){
-  let roleArr = msg.guild.roles.array().map(r=>r.name);
-  const defaultChannel = msg.guild.channels.find(c=> c.permissionsFor(msg.guild.me).has("SEND_MESSAGES"));
-  const embed = new Discord.RichEmbed()
+   let roleArr = msg.guild.roles.array().map(r=>r.name);
+   const defaultChannel = msg.guild.channels.find(c=> c.permissionsFor(msg.guild.me).has("SEND_MESSAGES"));
+   const embed = new Discord.RichEmbed()
    .setTitle(`Information about ${msg.guild.name}`)
    .setColor(0x00AE86)
    .setDescription(`Created at ${msg.guild.createdAt}`)
@@ -552,27 +639,25 @@ if(cmd === "info"){
    .addField(`Roles:`,`${roleArr.length} `,true )
    .addField(`Default channel:`, `${defaultChannel}`, true )
    msg.channel.send({embed});
-} else {
+  } else {
   return msg.channel.send(":warning: I do not have ``EMBED_LINKS`` permission! So i cannot send this information!")
-}
-}
+  }}
  if(args[0] === "channel"){
    if(pcode.hasPermission('EMBED_LINKS')){
- const embed = new Discord.RichEmbed()
- .setTitle(`Information about ${msg.channel.name}`)
- .setColor(0x00AE86)
- .setDescription(`ID: ${msg.channel.id}`)
- .setFooter(`P-code`)
- .setThumbnail(msg.guild.iconURL)
- .setTimestamp()
- .addField(`Channel created at:`, `${msg.channel.createdAt}`)
- msg.channel.send({embed});
-} else {
+  const embed = new Discord.RichEmbed()
+  .setTitle(`Information about ${msg.channel.name}`)
+  .setColor(0x00AE86)
+  .setDescription(`ID: ${msg.channel.id}`)
+  .setFooter(`P-code`)
+  .setThumbnail(msg.guild.iconURL)
+  .setTimestamp()
+  .addField(`Channel created at:`, `${msg.channel.createdAt}`)
+  msg.channel.send({embed});
+  } else {
   return msg.channel.send(":warning: I do not have ``EMBED_LINKS`` permission! So i cannot send this information!")
-}
-}
+ } }
  if(args[0] === "role"){
-   let wantedRole = args.slice(1).join(" "); // The word role is actually args[0] so we have to slice from 1 and join them all up (e.g. ["role", "Bot", "Developer"]) - in that case we'd want to join bot and developer together with a space. 
+   let wantedRole = args.slice(1).join(" "); // The word role is actually args[0] so we have to slice from 1 and join them all up (e.g. ["role", "Bot", "Developer"]) - in that case we'd want to join bot and developer together with a space.
    if(!msg.guild.roles.find("name", wantedRole)) return msg.channel.send(":warning: I cannot find a role with that name! (Did you type the name right? It is case-sensitive)!");
     let roleObj = msg.guild.roles.find("name", wantedRole);
     let onsidebar;
@@ -616,19 +701,19 @@ if(cmd === "info"){
         msg.channel.send({embed});
     } else {
       msg.channel.send(":warning: I do not have ``EMBED_LINKS`` permission! So i cannot send this information!")
-    }}}  
+    }}}
 if(cmd === 'avatar'){
    if(pcode.hasPermission('EMBED_LINKS')){
- let user = msg.mentions.users.first() || msg.author;
- const embed = new Discord.RichEmbed()
+  let user = msg.mentions.users.first() || msg.author;
+  const embed = new Discord.RichEmbed()
       .setTitle(`Avatar of ${user.tag}`)
       .setImage(user.displayAvatarURL)
       .setColor(654321)
       .setFooter(`P-code`)
       msg.channel.send(embed)
-} else {
+ } else {
   return msg.reply(":warning: I don't have ``EMBED_LINKS`` permission! So i cannot send this avatar.")
-}
+ }
 }
 if(cmd === "membercount" || cmd === "mbc"){
   msg.channel.send(`This server has ${msg.guild.memberCount} members!`)
@@ -645,47 +730,46 @@ if(cmd === "channels"){
    if(msg.guild.id === "396799859900022784")
      return msg.channel.send(":warning: Yzfire has disabled this command!")
   let channelArray = msg.guild.channels.array().filter(c=>c.type === "text").map(c=>"#" + c.name);
-let finalChannels = channelArray.join(", ")
-msg.author.send('```'+`Channels in ${msg.guild.name}:` + n + " " + n + `${finalChannels}` +'```')
+  let finalChannels = channelArray.join(", ");
+ msg.author.send('```'+`Channels in ${msg.guild.name}:` + n + " " + n + `${finalChannels}` +'```')
   msg.channel.send(":white_check_mark: Done. All channels have been send to your DMs!")
 }
 if(cmd === "perms"){
-let member = msg.mentions.users.first() || msg.author.tag;
-let perms = msg.member.permissions;
-let has_create_invite = msg.member.hasPermission("CREATE_INSTANT_INVITE");
-let has_kick = msg.member.hasPermission("KICK_MEMBERS");
-let has_ban = msg.member.hasPermission("BAN_MEMBERS");
-let has_admin = msg.member.hasPermission("ADMINISTRATOR");
-let has_manage_channels = msg.member.hasPermission("MANAGE_CHANNELS");
-let has_manage_guild = msg.member.hasPermission("MANAGE_GUILD"); 
-let has_add_reactions = msg.member.hasPermission("ADD_REACTIONS"); 
-let has_read_messages = msg.member.hasPermission("READ_MESSAGES");
-let has_send_messages = msg.member.hasPermission("SEND_MESSAGES");
-let has_send_TTS_messages = msg.member.hasPermission("SEND_TTS_MESSAGES");
-let has_manage_messages = msg.member.hasPermission("MANAGE_MESSAGES");
-let has_embed_links = msg.member.hasPermission("EMBED_LINKS");
-let has_attach_files = msg.member.hasPermission("ATTACH_FILES");
-let has_read_message_history = msg.member.hasPermission("READ_MESSAGE_HISTORY");
-let has_mention_everyone = msg.member.hasPermission("MENTION_EVERYONE");
-let has_external_emotes = msg.member.hasPermission("EXTERNAL_EMOJIS");
-let has_connect = msg.member.hasPermission("CONNECT");
-let has_speak = msg.member.hasPermission("SPEAK");
-let has_mute_members = msg.member.hasPermission("MUTE_MEMBERS");
-let has_deafen_members = msg.member.hasPermission("DEAFEN_MEMBERS");
-let has_move_members = msg.member.hasPermission("MOVE_MEMBERS");
-let has_change_nickname = msg.member.hasPermission("CHANGE_NICKNAME");
-let has_manage_nicknames = msg.member.hasPermission("MANAGE_NICKNAMES");
-let has_manage_roles = msg.member.hasPermission("MANAGE_ROLES_OR_PERMISSIONS");
-let has_manage_webhooks = msg.member.hasPermission("MANAGE_WEBHOOKS");
-let has_manage_emojis = msg.member.hasPermission("MANAGE_EMOJIS");
+ let member = msg.mentions.users.first() || msg.author.tag;
+ let perms = msg.member.permissions;
+ let has_create_invite = msg.member.hasPermission("CREATE_INSTANT_INVITE");
+ let has_kick = msg.member.hasPermission("KICK_MEMBERS");
+ let has_ban = msg.member.hasPermission("BAN_MEMBERS");
+ let has_admin = msg.member.hasPermission("ADMINISTRATOR");
+ let has_manage_channels = msg.member.hasPermission("MANAGE_CHANNELS");
+ let has_manage_guild = msg.member.hasPermission("MANAGE_GUILD");
+ let has_add_reactions = msg.member.hasPermission("ADD_REACTIONS");
+ let has_read_messages = msg.member.hasPermission("READ_MESSAGES");
+ let has_send_messages = msg.member.hasPermission("SEND_MESSAGES");
+ let has_send_TTS_messages = msg.member.hasPermission("SEND_TTS_MESSAGES");
+ let has_manage_messages = msg.member.hasPermission("MANAGE_MESSAGES");
+ let has_embed_links = msg.member.hasPermission("EMBED_LINKS");
+ let has_attach_files = msg.member.hasPermission("ATTACH_FILES");
+ let has_read_message_history = msg.member.hasPermission("READ_MESSAGE_HISTORY");
+ let has_mention_everyone = msg.member.hasPermission("MENTION_EVERYONE");
+ let has_external_emotes = msg.member.hasPermission("EXTERNAL_EMOJIS");
+ let has_connect = msg.member.hasPermission("CONNECT");
+ let has_speak = msg.member.hasPermission("SPEAK");
+ let has_mute_members = msg.member.hasPermission("MUTE_MEMBERS");
+ let has_deafen_members = msg.member.hasPermission("DEAFEN_MEMBERS");
+ let has_move_members = msg.member.hasPermission("MOVE_MEMBERS");
+ let has_change_nickname = msg.member.hasPermission("CHANGE_NICKNAME");
+ let has_manage_nicknames = msg.member.hasPermission("MANAGE_NICKNAMES");
+ let has_manage_roles = msg.member.hasPermission("MANAGE_ROLES_OR_PERMISSIONS");
+ let has_manage_webhooks = msg.member.hasPermission("MANAGE_WEBHOOKS");
+ let has_manage_emojis = msg.member.hasPermission("MANAGE_EMOJIS");
   if(has_admin) {
     msg.channel.send("You have administrator perm")
   } else {
   msg.channel.send('```'+`Perms for ${member}` + n + " " + n +`• Create invite: ${has_create_invite}` + n + `• Kick members: ${has_kick}` + n + `• Ban members: ${has_ban}` + n + `• Manage server: ${has_manage_guild}`+ n + `• Add reactions: ${has_add_reactions}`+ n + `• Read messages: ${has_read_messages}`+ n + `• Send messages: ${has_send_messages}`+ n + `• Send TTS messages: ${has_send_TTS_messages}`+ n + `• Manage messages: ${has_manage_messages}`+ n + `• Embed links: ${has_embed_links}`+ n + `• Attach files: ${has_attach_files}`+ n + `• Read message history: ${has_read_message_history}`+ n + `• Mention everyone: ${has_mention_everyone}`+ n + `• External emotes: ${has_external_emotes}`+ n + `• Connect: ${has_connect}`+ n + `• Speak: ${has_speak}`+ n + `• Mute members: ${has_mute_members}`+ n + `• Deafen members: ${has_deafen_members}`+ n + `• Move members: ${has_move_members}`+ n + `• Change nickname: ${has_change_nickname}`+ n + `• Manage_nicknames: ${has_manage_nicknames}`+ n + `• Manage_roles: ${has_manage_roles}`+ n + `• Manage webhooks: ${has_manage_webhooks}`+ n + `• Manage emoji's: ${has_manage_emojis}`+'```')
-}
-}  
-  
-//Fun commands  
+}}
+
+//Fun commands
 if(cmd === "lenny"){
  var myArray = ['(づ◔ ͜ʖ◔)づ', '(⌐■_■)', '¯\_ツ_/¯','☞   ͜ʖ  ☞','ᕙ(ꖘヮꖘ)ᕗ','ʢ◉ᴥ◉ʡ','( ͡°Ĺ̯ ͡°)','☞☉﹏☉☞','(╯°□°）╯︵ ┻━┻','┬─┬ ノ( ゜-゜ノ)',];
    var rand = myArray[Math.floor(Math.random() * myArray.length)];
@@ -702,7 +786,7 @@ if(cmd === "choose"){
     let optionsList = theirOptions.map(opt => opt.trim());
     if(optionsList.includes("@everyone") || optionsList.includes("@here")) return msg.channel.send(":warning: You cannot use those mentions for the choose command!");
     const m = msg.channel.send(`${theirOptions[Math.floor(Math.random() * theirOptions.length)]}`)
-    }  
+    }
 if(cmd === "dice"){
   var randnumber = Math.floor(Math.random()*6) + 1;
   msg.channel.send("You rolled number: " + randnumber);
@@ -731,10 +815,9 @@ if(cmd === "8ball"){
              }
          });
    }
-} else {
+ } else {
   return msg.reply(":warning: I do not have the `EMBED_LINKS` permission so i cannot answer your question!")
-}
-}  
+}}
 if(cmd === "rate"){
   const rateObj = args.join(" ");
   if(!rateObj)
@@ -756,7 +839,7 @@ if(cmd === "ben"){
   if(!ben)
     return msg.channel.send(":warning: You must give me someone to ben!")
   msg.channel.send(`:white_check_mark: Done. **${ben}** has been benned succesfully!`)
-} 
+}
 if(cmd === "kill"){
   let killer = msg.author;
   let killedHuman = msg.mentions.members.first();
@@ -772,11 +855,11 @@ if(cmd === "slap"){
  let killer = msg.author;
  let killedHuman = msg.mentions.members.first();
  if(!killedHuman)
- return msg.channel.sed(":warning: You must mention someone to slap!")
+ return msg.channel.send(":warning: You must mention someone to slap!")
    if(killer.id === killedHuman.id)
     return msg.channel.send("Why do you want to slap yourself?")
  msg.channel.send(`${killer} slapped ${killedHuman}!`)
-}  
+}
 if(cmd === "kiss"){
   let killer = msg.author;
   let killedHuman = msg.mentions.members.first();
@@ -785,7 +868,7 @@ if(cmd === "kiss"){
    if(killer.id === killedHuman.id)
     return msg.reply("Awww, are you lonely?")
   msg.channel.send(`${killer} kissed ${killedHuman}!`)
-}  
+}
 if(cmd === "calc"){
   let amount = args[0]
   let functiona = args[0]
@@ -831,7 +914,7 @@ if(cmd === "bite"){
    if(killer.id === killedHuman.id)
     return msg.chanel.send("Why do you want to bite yourself?")
   msg.channel.send(`${killer} bit ${killedHuman}!`)
-}   
+}
 if(cmd === "hug"){
   let killer = msg.author;
   let killedHuman = msg.mentions.members.first();
@@ -840,8 +923,19 @@ if(cmd === "hug"){
    if(killer.id === killedHuman.id)
     return msg.channel.send("Awww, are you lonely?")
   msg.channel.send(`${killer} hugged ${killedHuman}!`)
-} 
-  
+}
+if(cmd === "google") {
+ let searchUrl = `https://www.google.com/search?q=${encodeURIComponent(msg.content)}&safe=active`;
+   return snekfetch.get(searchUrl).then((result) => {
+      let $ = cheerio.load(result.text);
+      let googleData = $('.r').first().find('a').first().attr('href');
+      googleData = querystring.parse(googleData.replace('/url?', ''));
+     msg.channel.send(`${googleData.q}`)
+  }).catch((err) => {
+     msg.channel.send(':warning: No results found!');
+  });
+}
+
   //Contact and response
 if(cmd === "contact"){
   const mcontent = args.join(" ");
@@ -849,9 +943,9 @@ if(cmd === "contact"){
   return msg.reply(`You need to ask a questions or send ideas.`)
  }else {
   bot.channels.get(`418430304437534730`).send(`**${msg.author.tag}** at **#${msg.channel.name}** of server "**${msg.guild.name}**" says:` + n + n + `${mcontent}` + n + n + `(IDs: User: ${msg.author.id}; Channel: ${msg.channel.id}; Server: ${msg.guild.id})`)
-    
+
   msg.channel.send(`${msg.author} you have contacted succesfully!`)
- } 
+ }
 }
 if(cmd === "c"){
   if(args[0] === undefined){
@@ -865,7 +959,7 @@ if(cmd === "c"){
     return msg.reply("You need to give an answer to the question!")
   bot.channels.get(`${channel}`).send(`${answer} / Answered by ${msg.author.tag}`);
   msg.channel.send(`${msg.author} replied!`)
-} 
+}
   if(args[0] === "blacklist"){ if(msg.channel.id !== "418430304437534730") return;
    if(args[1] === undefined){
      msg.channel.send("You can blacklist a server or a user, do `=c blacklist user <id>` for a user and `=c blacklist server <id>`")
@@ -886,7 +980,7 @@ if(cmd === "c"){
      bot.channels.get('427505818863140866').send(`Requested to add ${server} to the blacklist (a server)`)
      msg.channel.send(`Done. Requested that ${server} needs to be blacklisted!`)
    }}}
-   
+
   //Other commands
 if(cmd === "ping"){
   const m = await msg.channel.send("Calculating the ping...");
@@ -904,7 +998,7 @@ if(cmd === "invite"){
         },
         {
           name: "Invite me to your server!",
-          value: "https://discordapp.com/api/oauth2/authorize?client_id=419806744907350017&permissions=335670487&scope=bot"
+          value: "https://discordapp.com/api/oauth2/authorize?bot_id=419806744907350017&permissions=335670487&scope=bot"
         }
       ],
       footer: {
@@ -913,7 +1007,6 @@ if(cmd === "invite"){
         });
 
 }
-     
-  
+
 });
  bot.login(token);
